@@ -5,10 +5,11 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import AddEntry from './pages/AddEntry'
+import History from './pages/History'
 
 function AppContent() {
   const { user, loading: authLoading, logout } = useAuth();
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'add-entry', 'login', 'register'
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'add-entry', 'history', 'login', 'register'
   const [editingEntry, setEditingEntry] = useState(null);
   
   const [apiStatus, setApiStatus] = useState({
@@ -98,8 +99,15 @@ function AppContent() {
                   Dashboard
                 </a>
               </li>
-              <li><a href="#">History</a></li>
-              <li><a href="#">Reports</a></li>
+              <li>
+                <a 
+                  href="#" 
+                  onClick={(e) => { e.preventDefault(); navigateTo('history'); }} 
+                  className={currentView === 'history' ? 'active' : ''}
+                >
+                  History & Reports
+                </a>
+              </li>
               <li><a href="#">Profile</a></li>
               {user.role === 'admin' && (
                 <li><a href="#" style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '20px', marginLeft: '10px', color: 'var(--danger-color)' }}>Admin Dash</a></li>
@@ -162,6 +170,12 @@ function AppContent() {
           <AddEntry 
             onNavigate={navigateTo} 
             editingEntry={editingEntry}
+          />
+        )}
+
+        {currentView === 'history' && (
+          <History 
+            onEditEntry={handleEditEntry}
           />
         )}
       </main>
