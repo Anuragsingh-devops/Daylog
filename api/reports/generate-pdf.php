@@ -97,25 +97,22 @@ try {
     $stmt->execute($params);
     $entries = $stmt->fetchAll();
 
-    // Aggregations
+    // Dynamic Aggregations
     $totalEntries = count($entries);
-    $studyEntries = 0;
-    $skillEntries = 0;
-    $workEntries = 0;
-    $personalEntries = 0;
-    $expenseEntries = 0;
+    $typeCounts = [];
     $totalExpenses = 0.0;
+    $hasExpense = false;
 
     $groupedEntries = [];
 
     foreach ($entries as $entry) {
-        $t = $entry['type'];
-        if ($t === 'Study') $studyEntries++;
-        elseif ($t === 'Skill') $skillEntries++;
-        elseif ($t === 'Work') $workEntries++;
-        elseif ($t === 'Personal') $personalEntries++;
-        elseif ($t === 'Expense') {
-            $expenseEntries++;
+        $t = trim($entry['type']);
+        if ($t === '') $t = 'Other';
+        
+        $typeCounts[$t] = ($typeCounts[$t] ?? 0) + 1;
+
+        if (strtolower($t) === 'expense' || (!empty($entry['amount']) && floatval($entry['amount']) > 0)) {
+            $hasExpense = true;
             $totalExpenses += floatval($entry['amount']);
         }
 
@@ -186,20 +183,24 @@ try {
     $pdf->SetFont('Arial', '', 10);
     
     // Grid alignment helper
-    $wCol = 55;
+    $wCol = 60;
     $hCell = 6;
     
-    $pdf->Cell($wCol, $hCell, 'Total Entries: ' . $totalEntries, 0, 0);
-    $pdf->Cell($wCol, $hCell, 'Work Entries: ' . $workEntries, 0, 0);
-    $pdf->Cell($wCol, $hCell, 'Study Entries: ' . $studyEntries, 0, 1);
+    $summaryItems = ['Total Entries: ' . $totalEntries];
+    foreach ($typeCounts as $typeName => $count) {
+        $summaryItems[] = ucfirst($typeName) . ' Entries: ' . $count;
+    }
 
-    $pdf->Cell($wCol, $hCell, 'Skill Entries: ' . $skillEntries, 0, 0);
-    $pdf->Cell($wCol, $hCell, 'Personal Entries: ' . $personalEntries, 0, 0);
-    $pdf->Cell($wCol, $hCell, 'Expense Entries: ' . $expenseEntries, 0, 1);
+    for ($i = 0; $i < count($summaryItems); $i++) {
+        $isLastInRow = (($i + 1) % 3 === 0) || ($i === count($summaryItems) - 1);
+        $pdf->Cell($wCol, $hCell, $summaryItems[$i], 0, $isLastInRow ? 1 : 0);
+    }
 
-    $pdf->SetFont('Arial', 'B', 10);
-    $pdf->Cell(0, $hCell, 'Total Expenses: INR ' . number_format($totalExpenses, 2), 0, 1);
-    $pdf->Ln(8);
+    if ($hasExpense && $totalExpenses > 0) {
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->Cell(0, $hCell, 'Total Expenses: INR ' . number_format($totalExpenses, 2), 0, 1);
+    }
+    $pdf->Ln(6);
 
     // -------------------------------------------------------------
     // Grouped logs list
