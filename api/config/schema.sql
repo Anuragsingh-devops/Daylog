@@ -43,12 +43,14 @@ CREATE TABLE IF NOT EXISTS `todos` (
   `description` TEXT NULL,
   `priority` ENUM('low', 'medium', 'high') DEFAULT 'medium' NOT NULL,
   `status` ENUM('pending', 'completed') DEFAULT 'pending' NOT NULL,
+  `recurrence` ENUM('none', 'daily', 'weekly', 'monthly') DEFAULT 'none' NOT NULL,
   `due_date` DATE NULL,
   `completed_at` TIMESTAMP NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   INDEX `idx_todos_user_status` (`user_id`, `status`),
-  INDEX `idx_todos_user_due` (`user_id`, `due_date`)
+  INDEX `idx_todos_user_due` (`user_id`, `due_date`),
+  INDEX `idx_todos_user_recurrence` (`user_id`, `recurrence`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

@@ -9,9 +9,9 @@ import {
 
 export default function Todos() {
   const [todos, setTodos] = useState([]);
-  const [stats, setStats] = useState({ total: 0, pending: 0, completed: 0, today_pending: 0, overdue: 0 });
+  const [stats, setStats] = useState({ total: 0, pending: 0, completed: 0, today_pending: 0, overdue: 0, recurring: 0 });
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // 'all', 'today', 'pending', 'completed', 'high'
+  const [filter, setFilter] = useState('all'); // 'all', 'today', 'pending', 'recurring', 'completed', 'high'
   const [search, setSearch] = useState('');
   const [feedback, setFeedback] = useState({ message: '', type: '' });
 
@@ -19,6 +19,7 @@ export default function Todos() {
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [newPriority, setNewPriority] = useState('medium');
+  const [newRecurrence, setNewRecurrence] = useState('none');
   const [newDueDate, setNewDueDate] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -28,6 +29,7 @@ export default function Todos() {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editPriority, setEditPriority] = useState('medium');
+  const [editRecurrence, setEditRecurrence] = useState('none');
   const [editDueDate, setEditDueDate] = useState('');
   const [editSubmitting, setEditSubmitting] = useState(false);
 
@@ -38,6 +40,7 @@ export default function Todos() {
       if (filter === 'pending') params.status = 'pending';
       if (filter === 'completed') params.status = 'completed';
       if (filter === 'today') params.filter = 'today';
+      if (filter === 'recurring') params.filter = 'recurring';
       if (filter === 'high') params.priority = 'high';
       if (search.trim()) params.search = search.trim();
 
@@ -59,7 +62,7 @@ export default function Todos() {
 
   const showNotification = (msg, type = 'success') => {
     setFeedback({ message: msg, type });
-    setTimeout(() => setFeedback({ message: '', type: '' }), 3500);
+    setTimeout(() => setFeedback({ message: '', type: '' }), 4000);
   };
 
   const handleCreateTodo = async (e) => {
@@ -72,6 +75,7 @@ export default function Todos() {
         title: newTitle.trim(),
         description: newDescription.trim(),
         priority: newPriority,
+        recurrence: newRecurrence,
         due_date: newDueDate || null
       });
 
@@ -79,8 +83,13 @@ export default function Todos() {
       setNewDescription('');
       setNewDueDate('');
       setNewPriority('medium');
+      setNewRecurrence('none');
       setShowNotes(false);
-      showNotification('Task added successfully!');
+      showNotification(
+        newRecurrence !== 'none' 
+          ? `Recurring (${newRecurrence}) task added!` 
+          : 'Task added successfully!'
+      );
       fetchTodos();
     } catch (err) {
       showNotification(err.message || 'Failed to create task.', 'danger');
@@ -95,7 +104,10 @@ export default function Todos() {
     setTodos(todos.map(t => t.id === todo.id ? { ...t, status: nextStatus } : t));
 
     try {
-      await toggleTodoApi(todo.id);
+      const res = await toggleTodoApi(todo.id);
+      if (res && res.message) {
+        showNotification(res.message);
+      }
       fetchTodos();
     } catch (err) {
       showNotification(err.message || 'Failed to update status.', 'danger');
@@ -120,6 +132,7 @@ export default function Todos() {
     setEditTitle(todo.title);
     setEditDescription(todo.description || '');
     setEditPriority(todo.priority || 'medium');
+    setEditRecurrence(todo.recurrence || 'none');
     setEditDueDate(todo.due_date || '');
   };
 
@@ -133,6 +146,7 @@ export default function Todos() {
         title: editTitle.trim(),
         description: editDescription.trim(),
         priority: editPriority,
+        recurrence: editRecurrence,
         due_date: editDueDate || null
       });
       showNotification('Task updated successfully.');
@@ -147,7 +161,6 @@ export default function Todos() {
 
   // Completion calculation
   const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
-
   const todayStr = new Date().toISOString().split('T')[0];
 
   return (
@@ -157,7 +170,7 @@ export default function Todos() {
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: '700' }}>To-Do & Tasks</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>
-            Plan, organize, and track your daily action items
+            Plan, organize, and manage daily, weekly, and monthly recurring routines
           </p>
         </div>
       </div>
@@ -170,7 +183,7 @@ export default function Todos() {
       )}
 
       {/* Progress & Overview Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px', marginBottom: '24px' }}>
         <div className="card" style={{ padding: '16px' }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>TOTAL TASKS</div>
           <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '4px' }}>{stats.total}</div>
@@ -178,6 +191,10 @@ export default function Todos() {
         <div className="card" style={{ padding: '16px' }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>PENDING</div>
           <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '4px', color: '#d97706' }}>{stats.pending}</div>
+        </div>
+        <div className="card" style={{ padding: '16px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>MONTHLY / RECURRING</div>
+          <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '4px', color: 'var(--primary-color)' }}>{stats.recurring || 0}</div>
         </div>
         <div className="card" style={{ padding: '16px' }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>COMPLETED</div>
@@ -210,28 +227,44 @@ export default function Todos() {
               placeholder="What needs to be done? (Press Enter to add)"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              style={{ flex: '1', minWidth: '240px' }}
+              style={{ flex: '1', minWidth: '220px' }}
               required
             />
 
+            {/* Repeat Selector */}
+            <select
+              className="form-control"
+              value={newRecurrence}
+              onChange={(e) => setNewRecurrence(e.target.value)}
+              style={{ width: 'auto', minWidth: '130px', fontWeight: newRecurrence !== 'none' ? '600' : 'normal' }}
+              title="Repeat frequency"
+            >
+              <option value="none">One-time</option>
+              <option value="monthly">🔁 Monthly</option>
+              <option value="weekly">🔁 Weekly</option>
+              <option value="daily">🔁 Daily</option>
+            </select>
+
+            {/* Priority Selector */}
             <select
               className="form-control"
               value={newPriority}
               onChange={(e) => setNewPriority(e.target.value)}
-              style={{ width: 'auto', minWidth: '120px' }}
+              style={{ width: 'auto', minWidth: '110px' }}
             >
               <option value="low">🟢 Low</option>
               <option value="medium">🟡 Medium</option>
               <option value="high">🔴 High</option>
             </select>
 
+            {/* Due Date Picker */}
             <input
               type="date"
               className="form-control"
               value={newDueDate}
               onChange={(e) => setNewDueDate(e.target.value)}
               style={{ width: 'auto' }}
-              title="Due date"
+              title="Due date (for monthly tasks, sets the monthly target day)"
             />
 
             <button
@@ -277,12 +310,13 @@ export default function Todos() {
       {/* Task Filters & Search Bar */}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-          {/* Filter Pills */}
+          {/* Filter Tabs */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {[
               { id: 'all', label: 'All', count: stats.total },
               { id: 'today', label: 'Today', count: stats.today_pending },
               { id: 'pending', label: 'Pending', count: stats.pending },
+              { id: 'recurring', label: '🔁 Monthly / Recurring', count: stats.recurring },
               { id: 'completed', label: 'Completed', count: stats.completed },
               { id: 'high', label: '🔴 High Priority' }
             ].map(tab => (
@@ -377,6 +411,20 @@ export default function Todos() {
                       }}>
                         {todo.title}
                       </span>
+
+                      {/* Recurrence Badge */}
+                      {todo.recurrence && todo.recurrence !== 'none' && (
+                        <span style={{
+                          fontSize: '11px',
+                          padding: '2px 7px',
+                          borderRadius: '4px',
+                          fontWeight: '600',
+                          backgroundColor: '#e0e7ff',
+                          color: '#4338ca'
+                        }}>
+                          🔁 {todo.recurrence.toUpperCase()}
+                        </span>
+                      )}
 
                       {/* Priority Badge */}
                       <span style={{
@@ -514,6 +562,20 @@ export default function Todos() {
                   onChange={(e) => setEditTitle(e.target.value)}
                   required
                 />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Repeat Frequency</label>
+                <select
+                  className="form-control"
+                  value={editRecurrence}
+                  onChange={(e) => setEditRecurrence(e.target.value)}
+                >
+                  <option value="none">One-time</option>
+                  <option value="monthly">🔁 Monthly</option>
+                  <option value="weekly">🔁 Weekly</option>
+                  <option value="daily">🔁 Daily</option>
+                </select>
               </div>
 
               <div className="form-group">

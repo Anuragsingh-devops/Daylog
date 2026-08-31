@@ -36,6 +36,7 @@ try {
           `description` TEXT NULL,
           `priority` ENUM('low', 'medium', 'high') DEFAULT 'medium' NOT NULL,
           `status` ENUM('pending', 'completed') DEFAULT 'pending' NOT NULL,
+          `recurrence` ENUM('none', 'daily', 'weekly', 'monthly') DEFAULT 'none' NOT NULL,
           `due_date` DATE NULL,
           `completed_at` TIMESTAMP NULL,
           `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -46,6 +47,13 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
+    // Add recurrence column if existing table doesn't have it
+    try {
+        $db->exec("ALTER TABLE `todos` ADD COLUMN `recurrence` ENUM('none', 'daily', 'weekly', 'monthly') DEFAULT 'none' NOT NULL AFTER `status`");
+    } catch (Exception $e) {
+        // Column already exists, safe to ignore
+    }
+
     $method = $_SERVER['REQUEST_METHOD'];
 
     // 1. GET: List todos with filters and stats
@@ -53,6 +61,7 @@ try {
         $status = isset($_GET['status']) ? trim($_GET['status']) : 'all';
         $priority = isset($_GET['priority']) ? trim($_GET['priority']) : 'all';
         $dateFilter = isset($_GET['filter']) ? trim($_GET['filter']) : 'all';
+        $recurrence = isset($_GET['recurrence']) ? trim($_GET['recurrence']) : 'all';
         $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
         $query = "SELECT * FROM todos WHERE user_id = :user_id";
@@ -78,6 +87,12 @@ try {
         } elseif ($dateFilter === 'overdue') {
             $query .= " AND due_date < :today AND status = 'pending'";
             $params[':today'] = $today;
+        } elseif ($dateFilter === 'recurring' || $recurrence === 'recurring') {
+            $query .= " AND recurrence != 'none'";
+        }
+
+        if ($recurrence === 'monthly') {
+            $query .= " AND recurrence = 'monthly'";
         }
 
         if (!empty($search)) {
@@ -99,7 +114,8 @@ try {
                 SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
                 SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
                 SUM(CASE WHEN due_date = :today AND status = 'pending' THEN 1 ELSE 0 END) as today_pending,
-                SUM(CASE WHEN due_date < :today AND status = 'pending' THEN 1 ELSE 0 END) as overdue
+                SUM(CASE WHEN due_date < :today AND status = 'pending' THEN 1 ELSE 0 END) as overdue,
+                SUM(CASE WHEN recurrence != 'none' AND status = 'pending' THEN 1 ELSE 0 END) as recurring
             FROM todos
             WHERE user_id = :user_id
         ");
@@ -115,6 +131,7 @@ try {
                 'completed' => (int)($stats['completed'] ?? 0),
                 'today_pending' => (int)($stats['today_pending'] ?? 0),
                 'overdue' => (int)($stats['overdue'] ?? 0),
+                'recurring' => (int)($stats['recurring'] ?? 0),
             ]
         ]);
         exit();
@@ -146,7 +163,7 @@ try {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         $action = $input['action'] ?? 'create';
 
-        // A. TOGGLE TASK COMPLETION
+        // A. TOGGLE TASK COMPLETION (with smart recurrence auto-rollover)
         if ($action === 'toggle') {
             $id = (int)($input['id'] ?? 0);
             if (!$id) {
@@ -155,8 +172,8 @@ try {
                 exit();
             }
 
-            // Get current status
-            $checkStmt = $db->prepare("SELECT status FROM todos WHERE id = ? AND user_id = ?");
+            // Get current status & details
+            $checkStmt = $db->prepare("SELECT * FROM todos WHERE id = ? AND user_id = ?");
             $checkStmt->execute([$id, $userId]);
             $current = $checkStmt->fetch();
 
@@ -176,11 +193,48 @@ try {
             ");
             $updateStmt->execute([$newStatus, $completedAt, $id, $userId]);
 
+            $nextTodo = null;
+            // If completing a recurring task, automatically generate next cycle
+            if ($newStatus === 'completed' && !empty($current['recurrence']) && $current['recurrence'] !== 'none') {
+                $rec = $current['recurrence'];
+                $baseDate = !empty($current['due_date']) ? $current['due_date'] : date('Y-m-d');
+                $nextDueDate = null;
+
+                if ($rec === 'monthly') {
+                    $nextDueDate = date('Y-m-d', strtotime('+1 month', strtotime($baseDate)));
+                } elseif ($rec === 'weekly') {
+                    $nextDueDate = date('Y-m-d', strtotime('+1 week', strtotime($baseDate)));
+                } elseif ($rec === 'daily') {
+                    $nextDueDate = date('Y-m-d', strtotime('+1 day', strtotime($baseDate)));
+                }
+
+                if ($nextDueDate) {
+                    $nextStmt = $db->prepare("
+                        INSERT INTO todos (user_id, title, description, priority, status, recurrence, due_date)
+                        VALUES (?, ?, ?, ?, 'pending', ?, ?)
+                    ");
+                    $nextStmt->execute([
+                        $userId,
+                        $current['title'],
+                        $current['description'],
+                        $current['priority'],
+                        $rec,
+                        $nextDueDate
+                    ]);
+                    $nextId = (int)$db->lastInsertId();
+
+                    $getStmt = $db->prepare("SELECT * FROM todos WHERE id = ?");
+                    $getStmt->execute([$nextId]);
+                    $nextTodo = $getStmt->fetch();
+                }
+            }
+
             echo json_encode([
                 'status' => 'success',
-                'message' => 'Task status updated.',
+                'message' => $nextTodo ? "Task completed! Next {$current['recurrence']} cycle scheduled for {$nextTodo['due_date']}." : 'Task status updated.',
                 'new_status' => $newStatus,
-                'completed_at' => $completedAt
+                'completed_at' => $completedAt,
+                'next_todo' => $nextTodo
             ]);
             exit();
         }
@@ -207,6 +261,7 @@ try {
             $title = trim($input['title'] ?? '');
             $description = trim($input['description'] ?? '');
             $priority = in_array($input['priority'] ?? '', ['low', 'medium', 'high']) ? $input['priority'] : 'medium';
+            $recurrence = in_array($input['recurrence'] ?? '', ['none', 'daily', 'weekly', 'monthly']) ? $input['recurrence'] : 'none';
             $dueDate = !empty($input['due_date']) ? $input['due_date'] : null;
 
             if (!$id || empty($title)) {
@@ -217,10 +272,10 @@ try {
 
             $stmt = $db->prepare("
                 UPDATE todos 
-                SET title = ?, description = ?, priority = ?, due_date = ? 
+                SET title = ?, description = ?, priority = ?, recurrence = ?, due_date = ? 
                 WHERE id = ? AND user_id = ?
             ");
-            $stmt->execute([$title, $description ?: null, $priority, $dueDate, $id, $userId]);
+            $stmt->execute([$title, $description ?: null, $priority, $recurrence, $dueDate, $id, $userId]);
 
             echo json_encode(['status' => 'success', 'message' => 'Task updated.']);
             exit();
@@ -230,6 +285,7 @@ try {
         $title = trim($input['title'] ?? '');
         $description = trim($input['description'] ?? '');
         $priority = in_array($input['priority'] ?? '', ['low', 'medium', 'high']) ? $input['priority'] : 'medium';
+        $recurrence = in_array($input['recurrence'] ?? '', ['none', 'daily', 'weekly', 'monthly']) ? $input['recurrence'] : 'none';
         $dueDate = !empty($input['due_date']) ? $input['due_date'] : null;
 
         if (empty($title)) {
@@ -239,10 +295,10 @@ try {
         }
 
         $stmt = $db->prepare("
-            INSERT INTO todos (user_id, title, description, priority, status, due_date)
-            VALUES (?, ?, ?, ?, 'pending', ?)
+            INSERT INTO todos (user_id, title, description, priority, status, recurrence, due_date)
+            VALUES (?, ?, ?, ?, 'pending', ?, ?)
         ");
-        $stmt->execute([$userId, $title, $description ?: null, $priority, $dueDate]);
+        $stmt->execute([$userId, $title, $description ?: null, $priority, $recurrence, $dueDate]);
         $newId = (int)$db->lastInsertId();
 
         $getStmt = $db->prepare("SELECT * FROM todos WHERE id = ?");
