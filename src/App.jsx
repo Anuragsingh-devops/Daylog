@@ -105,7 +105,7 @@ function AppContent() {
                   onClick={(e) => { e.preventDefault(); navigateTo('history'); }} 
                   className={currentView === 'history' ? 'active' : ''}
                 >
-                  History & Reports
+                  Reports
                 </a>
               </li>
               <li><a href="#">Profile</a></li>

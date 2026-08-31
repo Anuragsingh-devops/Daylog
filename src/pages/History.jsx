@@ -110,7 +110,7 @@ export default function History({ onEditEntry }) {
     <div>
       {/* 1. Header and PDF trigger */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '700' }}>History & Reports</h1>
+        <h1 style={{ fontSize: '24px', fontWeight: '700' }}>Reports</h1>
         <button 
           onClick={handleExportPDF} 
           className="btn btn-primary"
