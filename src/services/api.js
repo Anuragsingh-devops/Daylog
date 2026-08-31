@@ -342,3 +342,17 @@ export async function deleteAdminUserApi(userId) {
   }
   return data;
 }
+
+/**
+ * Fetch detailed profile, summary stats, and all activity entries for a specific user.
+ * @param {number} userId 
+ */
+export async function getAdminUserDetailsApi(userId) {
+  const response = await fetch(`/api/sys_vault_928/users.php?user_id=${userId}`);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch user details.');
+  }
+  return data;
+}
+

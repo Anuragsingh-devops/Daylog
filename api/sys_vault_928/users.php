@@ -28,8 +28,58 @@ try {
     $db = getDatabaseConnection();
     $method = $_SERVER['REQUEST_METHOD'];
 
-    // 1. GET: List all users
+    // 1. GET: List all users OR get single user details with entries
     if ($method === 'GET') {
+        if (!empty($_GET['user_id'])) {
+            $targetUserId = (int)$_GET['user_id'];
+            $userStmt = $db->prepare("
+                SELECT id, name, email, role, status, created_at
+                FROM users
+                WHERE id = ?
+            ");
+            $userStmt->execute([$targetUserId]);
+            $user = $userStmt->fetch();
+
+            if (!$user) {
+                http_response_code(404);
+                echo json_encode(['status' => 'error', 'message' => 'User not found.']);
+                exit();
+            }
+
+            // Fetch user's entries
+            $entriesStmt = $db->prepare("
+                SELECT id, type, entry_date, entry_time, content, amount, created_at
+                FROM entries
+                WHERE user_id = ?
+                ORDER BY entry_date DESC, entry_time DESC
+            ");
+            $entriesStmt->execute([$targetUserId]);
+            $entries = $entriesStmt->fetchAll();
+
+            // Compute summary
+            $totalSpend = 0;
+            $typeCounts = [];
+            foreach ($entries as $e) {
+                if ($e['type'] === 'Expense' && $e['amount']) {
+                    $totalSpend += (float)$e['amount'];
+                }
+                $t = $e['type'];
+                $typeCounts[$t] = ($typeCounts[$t] ?? 0) + 1;
+            }
+
+            echo json_encode([
+                'status' => 'success',
+                'user' => $user,
+                'entries' => $entries,
+                'summary' => [
+                    'total_entries' => count($entries),
+                    'total_spend' => $totalSpend,
+                    'type_counts' => $typeCounts
+                ]
+            ]);
+            exit();
+        }
+
         $stmt = $db->query("
             SELECT 
                 u.id, 

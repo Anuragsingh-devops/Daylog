@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   getAdminStatsApi, 
   getAdminUsersApi, 
+  getAdminUserDetailsApi,
   updateAdminUserStatusApi, 
   updateAdminUserRoleApi, 
   deleteAdminUserApi 
@@ -19,6 +20,11 @@ export default function AdminDashboard({ onNavigate }) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [feedback, setFeedback] = useState({ message: '', type: '' });
+
+  // Inspection Modal State
+  const [inspectingUser, setInspectingUser] = useState(null);
+  const [inspectingDetails, setInspectingDetails] = useState(null);
+  const [inspectingLoading, setInspectingLoading] = useState(false);
 
   const loadAdminData = async () => {
     setLoading(true);
@@ -122,6 +128,25 @@ export default function AdminDashboard({ onNavigate }) {
     } finally {
       setActionLoadingId(null);
     }
+  };
+
+  const handleInspectUser = async (user) => {
+    setInspectingUser(user);
+    setInspectingLoading(true);
+    setInspectingDetails(null);
+    try {
+      const details = await getAdminUserDetailsApi(user.id);
+      setInspectingDetails(details);
+    } catch (err) {
+      showNotification(err.message || 'Failed to load user details.', 'danger');
+    } finally {
+      setInspectingLoading(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setInspectingUser(null);
+    setInspectingDetails(null);
   };
 
   // Filter users
@@ -284,8 +309,12 @@ export default function AdminDashboard({ onNavigate }) {
                   return (
                     <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '12px' }}>
-                        <div style={{ fontWeight: '600', color: 'var(--text-color)' }}>
-                          {u.name} {isSelf && <span style={{ fontSize: '11px', color: 'var(--primary-color)', marginLeft: '4px' }}>(You)</span>}
+                        <div 
+                          onClick={() => handleInspectUser(u)} 
+                          style={{ fontWeight: '600', color: 'var(--primary-color)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          title="Click to view full user activity history"
+                        >
+                          {u.name} {isSelf && <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '2px' }}>(You)</span>}
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{u.email}</div>
                       </td>
@@ -321,6 +350,23 @@ export default function AdminDashboard({ onNavigate }) {
 
                       <td style={{ padding: '12px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                          <button
+                            onClick={() => handleInspectUser(u)}
+                            title="Inspect user entries and history"
+                            style={{
+                              padding: '4px 8px',
+                              fontSize: '12px',
+                              borderRadius: '4px',
+                              border: '1px solid var(--primary-color)',
+                              backgroundColor: '#eff6ff',
+                              color: 'var(--primary-color)',
+                              cursor: 'pointer',
+                              fontWeight: '600'
+                            }}
+                          >
+                            👁️ Logs
+                          </button>
+
                           <button
                             onClick={() => handleRoleChange(u)}
                             disabled={isSelf || isOperating}
@@ -435,6 +481,188 @@ export default function AdminDashboard({ onNavigate }) {
           </div>
         )}
       </div>
+
+      {/* User Activity Inspection Modal */}
+      {inspectingUser && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--card-background)',
+            borderRadius: 'var(--border-radius)',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            maxWidth: '850px',
+            width: '100%',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '16px 20px',
+              borderBottom: '1px solid var(--border-color)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              backgroundColor: '#fafafa'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: '700', margin: 0, color: 'var(--text-color)' }}>
+                    👤 {inspectingUser.name}
+                  </h2>
+                  <span style={{
+                    fontSize: '12px',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontWeight: '600',
+                    backgroundColor: inspectingUser.role === 'admin' ? '#e0e7ff' : '#f3f4f6',
+                    color: inspectingUser.role === 'admin' ? '#4338ca' : '#4b5563'
+                  }}>
+                    {inspectingUser.role === 'admin' ? '🛡️ Admin' : 'User'}
+                  </span>
+                  <span className={`status-badge ${inspectingUser.status === 'active' ? 'success' : 'danger'}`} style={{ padding: '2px 8px', fontSize: '11px' }}>
+                    {inspectingUser.status === 'active' ? 'Active' : 'Disabled'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  {inspectingUser.email} • Joined: {new Date(inspectingUser.created_at).toLocaleDateString()}
+                </div>
+              </div>
+              <button 
+                onClick={handleCloseModal}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  color: 'var(--text-muted)',
+                  padding: '4px 8px',
+                  borderRadius: '4px'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+              {inspectingLoading ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  Loading user history and entries...
+                </div>
+              ) : inspectingDetails ? (
+                <div>
+                  {/* Summary Cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+                    <div style={{ padding: '12px 16px', borderRadius: 'var(--border-radius)', backgroundColor: '#f8fafc', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>TOTAL LOGS</div>
+                      <div style={{ fontSize: '22px', fontWeight: '700', marginTop: '4px' }}>{inspectingDetails.summary.total_entries}</div>
+                    </div>
+                    <div style={{ padding: '12px 16px', borderRadius: 'var(--border-radius)', backgroundColor: '#f8fafc', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>TOTAL SPENDING</div>
+                      <div style={{ fontSize: '22px', fontWeight: '700', marginTop: '4px', color: 'var(--danger-color)' }}>
+                        ₹{inspectingDetails.summary.total_spend.toLocaleString()}
+                      </div>
+                    </div>
+                    <div style={{ padding: '12px 16px', borderRadius: 'var(--border-radius)', backgroundColor: '#f8fafc', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>TOP CATEGORIES</div>
+                      <div style={{ fontSize: '13px', marginTop: '4px', color: 'var(--text-color)' }}>
+                        {Object.entries(inspectingDetails.summary.type_counts || {}).map(([type, count]) => (
+                          <span key={type} style={{ display: 'inline-block', marginRight: '8px', fontSize: '12px' }}>
+                            {type}: <b>{count}</b>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Entries List */}
+                  <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '10px' }}>
+                    Journal Entries ({inspectingDetails.entries.length})
+                  </h3>
+
+                  {inspectingDetails.entries.length === 0 ? (
+                    <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: 'var(--border-radius)' }}>
+                      This user has not created any log entries yet.
+                    </div>
+                  ) : (
+                    <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius)', overflow: 'hidden' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                        <thead>
+                          <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
+                            <th style={{ padding: '10px 12px' }}>Date / Time</th>
+                            <th style={{ padding: '10px 12px' }}>Category</th>
+                            <th style={{ padding: '10px 12px' }}>Activity Content</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'right' }}>Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {inspectingDetails.entries.map((entry) => (
+                            <tr key={entry.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                              <td style={{ padding: '10px 12px', whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
+                                <div>{entry.entry_date}</div>
+                                <div style={{ fontSize: '11px' }}>{entry.entry_time ? entry.entry_time.substring(0, 5) : ''}</div>
+                              </td>
+                              <td style={{ padding: '10px 12px' }}>
+                                <span style={{
+                                  display: 'inline-block',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                  backgroundColor: '#f3f4f6'
+                                }}>
+                                  {entry.type}
+                                </span>
+                              </td>
+                              <td style={{ padding: '10px 12px', whiteSpace: 'pre-line' }}>
+                                {entry.content}
+                              </td>
+                              <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: '600' }}>
+                                {entry.amount ? `₹${Number(entry.amount).toLocaleString()}` : '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{
+              padding: '12px 20px',
+              borderTop: '1px solid var(--border-color)',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              backgroundColor: '#fafafa'
+            }}>
+              <button 
+                onClick={handleCloseModal}
+                className="btn btn-secondary"
+                style={{ padding: '6px 16px', fontSize: '13px', minHeight: '36px' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
