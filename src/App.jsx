@@ -12,6 +12,7 @@ function AppContent() {
   const { user, loading: authLoading, logout } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'add-entry', 'history', 'login', 'register'
   const [editingEntry, setEditingEntry] = useState(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   
   const [apiStatus, setApiStatus] = useState({
     loading: true,
@@ -19,6 +20,14 @@ function AppContent() {
     data: null,
     error: null
   });
+
+  // Close dropdown when clicking anywhere outside
+  useEffect(() => {
+    if (!userDropdownOpen) return;
+    const closeDropdown = () => setUserDropdownOpen(false);
+    document.addEventListener('click', closeDropdown);
+    return () => document.removeEventListener('click', closeDropdown);
+  }, [userDropdownOpen]);
 
   useEffect(() => {
     async function checkConnection() {
@@ -109,30 +118,97 @@ function AppContent() {
                   Reports
                 </a>
               </li>
-              <li>
-                <a 
-                  href="#" 
-                  onClick={(e) => { e.preventDefault(); navigateTo('profile'); }} 
-                  className={currentView === 'profile' ? 'active' : ''}
-                >
-                  Profile
-                </a>
-              </li>
               {user.role === 'admin' && (
                 <li><a href="#" style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '20px', marginLeft: '10px', color: 'var(--danger-color)' }}>Admin Dash</a></li>
               )}
             </ul>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: '15px', borderLeft: '1px solid var(--border-color)', paddingLeft: '15px' }}>
-              <span style={{ fontSize: '14px', fontWeight: '600' }}>
-                👤 {user.name}
-              </span>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <button 
-                onClick={logout} 
-                className="btn btn-secondary" 
-                style={{ minHeight: '34px', padding: '6px 12px', fontSize: '13px', backgroundColor: '#374151' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setUserDropdownOpen(!userDropdownOpen);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: 'var(--text-color)',
+                  padding: '8px 12px',
+                  borderRadius: 'var(--border-radius)',
+                  transition: 'var(--transition)'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--border-color)'}
+                onMouseLeave={(e) => { if (!userDropdownOpen) e.target.style.backgroundColor = 'transparent'; }}
               >
-                Logout
+                👤 {user.name} <span style={{ fontSize: '10px' }}>▼</span>
               </button>
+
+              {userDropdownOpen && (
+                <div style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '100%',
+                  marginTop: '8px',
+                  backgroundColor: 'var(--card-background)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--border-radius)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                  zIndex: 1000,
+                  minWidth: '150px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  padding: '6px 0'
+                }}>
+                  <a 
+                    href="#" 
+                    onClick={(e) => { 
+                      e.preventDefault(); 
+                      navigateTo('profile'); 
+                      setUserDropdownOpen(false); 
+                    }}
+                    style={{
+                      padding: '10px 16px',
+                      textDecoration: 'none',
+                      color: 'var(--text-color)',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      transition: 'var(--transition)',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--border-color)'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >
+                    ⚙️ Profile
+                  </a>
+                  <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
+                  <a 
+                    href="#" 
+                    onClick={(e) => { 
+                      e.preventDefault(); 
+                      logout(); 
+                      setUserDropdownOpen(false); 
+                    }}
+                    style={{
+                      padding: '10px 16px',
+                      textDecoration: 'none',
+                      color: 'var(--danger-color)',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      transition: 'var(--transition)',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >
+                    🚪 Logout
+                  </a>
+                </div>
+              )}
             </div>
           </nav>
         </div>
