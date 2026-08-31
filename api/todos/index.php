@@ -77,16 +77,12 @@ try {
             $params[':priority'] = $priority;
         }
 
-        $today = date('Y-m-d');
         if ($dateFilter === 'today') {
-            $query .= " AND due_date = :today";
-            $params[':today'] = $today;
+            $query .= " AND due_date = CURDATE()";
         } elseif ($dateFilter === 'upcoming') {
-            $query .= " AND due_date > :today";
-            $params[':today'] = $today;
+            $query .= " AND due_date > CURDATE()";
         } elseif ($dateFilter === 'overdue') {
-            $query .= " AND due_date < :today AND status = 'pending'";
-            $params[':today'] = $today;
+            $query .= " AND due_date < CURDATE() AND status = 'pending'";
         } elseif ($dateFilter === 'recurring' || $recurrence === 'recurring') {
             $query .= " AND recurrence != 'none'";
         }
@@ -107,19 +103,19 @@ try {
         $stmt->execute($params);
         $todos = $stmt->fetchAll();
 
-        // Calculate user-wide stats
+        // Calculate user-wide stats using native SQL functions
         $statsStmt = $db->prepare("
             SELECT 
                 COUNT(*) as total,
                 SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
                 SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-                SUM(CASE WHEN due_date = :today AND status = 'pending' THEN 1 ELSE 0 END) as today_pending,
-                SUM(CASE WHEN due_date < :today AND status = 'pending' THEN 1 ELSE 0 END) as overdue,
+                SUM(CASE WHEN due_date = CURDATE() AND status = 'pending' THEN 1 ELSE 0 END) as today_pending,
+                SUM(CASE WHEN due_date < CURDATE() AND status = 'pending' THEN 1 ELSE 0 END) as overdue,
                 SUM(CASE WHEN recurrence != 'none' AND status = 'pending' THEN 1 ELSE 0 END) as recurring
             FROM todos
-            WHERE user_id = :user_id
+            WHERE user_id = ?
         ");
-        $statsStmt->execute([':user_id' => $userId, ':today' => $today]);
+        $statsStmt->execute([$userId]);
         $stats = $statsStmt->fetch();
 
         echo json_encode([
