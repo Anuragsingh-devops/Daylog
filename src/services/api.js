@@ -356,3 +356,91 @@ export async function getAdminUserDetailsApi(userId) {
   return data;
 }
 
+// -------------------------------------------------------------
+// TO-DO / TASK MANAGEMENT APIs
+// -------------------------------------------------------------
+
+/**
+ * List todos with optional filters: { status, priority, filter, search }
+ */
+export async function listTodosApi(params = {}) {
+  const query = new URLSearchParams();
+  if (params.status) query.append('status', params.status);
+  if (params.priority) query.append('priority', params.priority);
+  if (params.filter) query.append('filter', params.filter);
+  if (params.search) query.append('search', params.search);
+
+  const url = `/api/todos/index.php${query.toString() ? '?' + query.toString() : ''}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to load tasks.');
+  }
+  return data;
+}
+
+/**
+ * Create a new task: { title, description, priority, due_date }
+ */
+export async function createTodoApi(todoData) {
+  const response = await fetch('/api/todos/index.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'create', ...todoData })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to create task.');
+  }
+  return data;
+}
+
+/**
+ * Toggle task completion status
+ */
+export async function toggleTodoApi(id) {
+  const response = await fetch('/api/todos/index.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'toggle', id })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to update task.');
+  }
+  return data;
+}
+
+/**
+ * Update an existing task: id, { title, description, priority, due_date }
+ */
+export async function updateTodoApi(id, todoData) {
+  const response = await fetch('/api/todos/index.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'update', id, ...todoData })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to update task.');
+  }
+  return data;
+}
+
+/**
+ * Delete a task
+ */
+export async function deleteTodoApi(id) {
+  const response = await fetch('/api/todos/index.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'delete', id })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to delete task.');
+  }
+  return data;
+}
+
+

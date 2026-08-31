@@ -5,6 +5,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import AddEntry from './pages/AddEntry'
 import History from './pages/History'
+import Todos from './pages/Todos'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 
@@ -114,6 +115,15 @@ function AppContent() {
                   className={currentView === 'dashboard' ? 'active' : ''}
                 >
                   Dashboard
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#" 
+                  onClick={(e) => { e.preventDefault(); navigateTo('todos'); }} 
+                  className={currentView === 'todos' ? 'active' : ''}
+                >
+                  To-Do
                 </a>
               </li>
               <li>
@@ -259,6 +269,10 @@ function AppContent() {
           <History 
             onEditEntry={handleEditEntry}
           />
+        )}
+
+        {currentView === 'todos' && (
+          <Todos />
         )}
 
         {currentView === 'profile' && (
