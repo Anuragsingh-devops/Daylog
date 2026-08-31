@@ -1,0 +1,8 @@
+# Disable directory listing
+Options -Indexes
+
+# Prevent access to hidden files and directories (like .git)
+RedirectMatch 404 /\..*$
+
+# Set default index
+DirectoryIndex index.html
