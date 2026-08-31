@@ -8,6 +8,7 @@ import AddEntry from './pages/AddEntry'
 import History from './pages/History'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
+import AdminDashboard from './pages/AdminDashboard'
 
 function AppContent() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -120,7 +121,16 @@ function AppContent() {
                 </a>
               </li>
               {user.role === 'admin' && (
-                <li><a href="#" style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '20px', marginLeft: '10px', color: 'var(--danger-color)' }}>Admin Dash</a></li>
+                <li>
+                  <a 
+                    href="#" 
+                    onClick={(e) => { e.preventDefault(); navigateTo('admin'); }}
+                    style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '20px', marginLeft: '10px', color: currentView === 'admin' ? 'var(--primary-color)' : 'var(--danger-color)', fontWeight: '600' }}
+                    className={currentView === 'admin' ? 'active' : ''}
+                  >
+                    🛡️ Admin Dash
+                  </a>
+                </li>
               )}
             </ul>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -292,6 +302,10 @@ function AppContent() {
 
         {currentView === 'settings' && (
           <Settings />
+        )}
+
+        {currentView === 'admin' && user.role === 'admin' && (
+          <AdminDashboard onNavigate={navigateTo} />
         )}
       </main>
     </div>

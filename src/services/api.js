@@ -262,6 +262,83 @@ export async function updateActivityTypeApi(oldName, newName) {
   return data;
 }
 
+/* ==========================================
+   ADMIN MANAGEMENT APIS
+   ========================================== */
 
+/**
+ * Fetch platform overview statistics for admins.
+ */
+export async function getAdminStatsApi() {
+  const response = await fetch('/api/admin/stats.php');
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch admin stats.');
+  }
+  return data;
+}
 
+/**
+ * List all registered users for admin management.
+ */
+export async function getAdminUsersApi() {
+  const response = await fetch('/api/admin/users.php');
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch user list.');
+  }
+  return data.users;
+}
 
+/**
+ * Toggle user account status (active vs disabled).
+ * @param {number} userId 
+ * @param {'active'|'disabled'} status 
+ */
+export async function updateAdminUserStatusApi(userId, status) {
+  const response = await fetch('/api/admin/users.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'toggle_status', user_id: userId, status })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to update user status.');
+  }
+  return data;
+}
+
+/**
+ * Update user account role (user vs admin).
+ * @param {number} userId 
+ * @param {'user'|'admin'} role 
+ */
+export async function updateAdminUserRoleApi(userId, role) {
+  const response = await fetch('/api/admin/users.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'update_role', user_id: userId, role })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to update user role.');
+  }
+  return data;
+}
+
+/**
+ * Delete a user account and their associated records.
+ * @param {number} userId 
+ */
+export async function deleteAdminUserApi(userId) {
+  const response = await fetch('/api/admin/users.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'delete', user_id: userId })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to delete user.');
+  }
+  return data;
+}
