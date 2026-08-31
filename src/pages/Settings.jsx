@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { listActivityTypesApi, createActivityTypeApi } from '../services/api';
 
 export default function Settings() {
   const [darkMode, setDarkMode] = useState(
@@ -7,7 +8,29 @@ export default function Settings() {
   const [defaultType, setDefaultType] = useState(
     localStorage.getItem('defaultActivityType') || 'Work'
   );
+  
+  const [allTypes, setAllTypes] = useState(['Work', 'Study', 'Skill', 'Expense', 'Personal']);
+  const [customTypes, setCustomTypes] = useState([]);
+  const [newTypeName, setNewTypeName] = useState('');
+  
   const [successMessage, setSuccessMessage] = useState('');
+  const [typeSuccess, setTypeSuccess] = useState('');
+  const [typeError, setTypeError] = useState('');
+
+  // Fetch activity types on mount
+  const fetchTypes = async () => {
+    try {
+      const result = await listActivityTypesApi();
+      setAllTypes(result.types);
+      setCustomTypes(result.custom_types || []);
+    } catch (err) {
+      console.error('Failed to load activity types:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchTypes();
+  }, []);
 
   // Handle Dark Mode toggle
   const handleThemeChange = (checked) => {
@@ -21,11 +44,35 @@ export default function Settings() {
     }
   };
 
+  // Save General settings (Default Activity Type)
   const handleSave = (e) => {
     e.preventDefault();
     localStorage.setItem('defaultActivityType', defaultType);
     setSuccessMessage('Settings saved successfully.');
     setTimeout(() => setSuccessMessage(''), 3000);
+  };
+
+  // Add a Custom Activity Type
+  const handleCreateType = async (e) => {
+    e.preventDefault();
+    setTypeError('');
+    setTypeSuccess('');
+
+    const trimmed = newTypeName.trim();
+    if (!trimmed) {
+      setTypeError('Activity type name cannot be blank.');
+      return;
+    }
+
+    try {
+      const result = await createActivityTypeApi(trimmed);
+      setTypeSuccess(result.message || 'Activity type created successfully!');
+      setNewTypeName('');
+      fetchTypes(); // Reload types list
+      setTimeout(() => setTypeSuccess(''), 3000);
+    } catch (err) {
+      setTypeError(err.message || 'Failed to create activity type.');
+    }
   };
 
   return (
@@ -79,11 +126,9 @@ export default function Settings() {
                   backgroundColor: 'white'
                 }}
               >
-                <option value="Work">Work</option>
-                <option value="Study">Study</option>
-                <option value="Skill">Skill</option>
-                <option value="Expense">Expense</option>
-                <option value="Personal">Personal</option>
+                {allTypes.map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
               </select>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
                 This activity type will be pre-selected when you open the "Add Entry" form.
@@ -94,11 +139,80 @@ export default function Settings() {
           <button
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%', minHeight: '44px', fontWeight: '600' }}
+            style={{ width: '100%', minHeight: '44px', fontWeight: '600', marginBottom: '10px' }}
           >
-            Save Settings
+            Save Preferences
           </button>
         </form>
+
+        <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '25px 0' }} />
+
+        {/* Custom Activity Types Section */}
+        <div>
+          <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '12px' }}>Manage Activity Types</h3>
+          
+          {typeSuccess && (
+            <div className="status-badge success" style={{ width: '100%', marginBottom: '12px', display: 'flex', boxSizing: 'border-box' }}>
+              <span className="status-dot"></span>
+              {typeSuccess}
+            </div>
+          )}
+
+          {typeError && (
+            <div className="status-badge danger" style={{ width: '100%', marginBottom: '12px', display: 'flex', boxSizing: 'border-box' }}>
+              <span className="status-dot"></span>
+              {typeError}
+            </div>
+          )}
+
+          <form onSubmit={handleCreateType} style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            <input
+              type="text"
+              placeholder="e.g., Coding, Exercise"
+              value={newTypeName}
+              onChange={(e) => setNewTypeName(e.target.value)}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--border-radius)',
+                fontSize: '14px'
+              }}
+            />
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ padding: '8px 16px', fontSize: '14px', whiteSpace: 'nowrap' }}
+            >
+              Add Type
+            </button>
+          </form>
+
+          {/* List of Custom Types */}
+          <div>
+            <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-muted)' }}>
+              Your Custom Types:
+            </h4>
+            {customTypes.length === 0 ? (
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                No custom types created yet.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {customTypes.map(t => (
+                  <span 
+                    key={t} 
+                    className="entry-type" 
+                    style={{ margin: 0, padding: '4px 10px', fontSize: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--background-color)', display: 'inline-block' }}
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

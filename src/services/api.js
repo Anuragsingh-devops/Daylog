@@ -198,3 +198,33 @@ export async function updateProfileApi(profileData) {
   return data;
 }
 
+/**
+ * List all activity types (default + custom).
+ */
+export async function listActivityTypesApi() {
+  const response = await fetch('/api/activity_types/list.php');
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to list activity types.');
+  }
+  return data;
+}
+
+/**
+ * Create a new custom activity type.
+ * @param {string} name 
+ */
+export async function createActivityTypeApi(name) {
+  const response = await fetch('/api/activity_types/create.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to create activity type.');
+  }
+  return data;
+}
+
+

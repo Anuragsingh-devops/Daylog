@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createEntryApi, updateEntryApi } from '../services/api';
+import { createEntryApi, updateEntryApi, listActivityTypesApi } from '../services/api';
 
 export default function AddEntry({ onNavigate, editingEntry = null }) {
   const isEditing = !!editingEntry;
@@ -15,6 +15,7 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   };
 
+  const [types, setTypes] = useState(['Work', 'Study', 'Skill', 'Expense', 'Personal']);
   const [type, setType] = useState(localStorage.getItem('defaultActivityType') || 'Work');
   const [entryDate, setEntryDate] = useState(getLocalDateString());
   const [entryTime, setEntryTime] = useState(getLocalTimeString());
@@ -24,6 +25,30 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState('');
+
+  // Load custom activity types
+  useEffect(() => {
+    async function fetchTypes() {
+      try {
+        const result = await listActivityTypesApi();
+        setTypes(result.types);
+        
+        // If editing entry is NOT present, double-check that the default activity type is set correctly
+        // (if the default type from settings doesn't exist in the list, default to first list item)
+        if (!editingEntry) {
+          const defaultVal = localStorage.getItem('defaultActivityType') || 'Work';
+          if (result.types.includes(defaultVal)) {
+            setType(defaultVal);
+          } else if (result.types.length > 0) {
+            setType(result.types[0]);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load activity types:', err);
+      }
+    }
+    fetchTypes();
+  }, [editingEntry]);
 
   // Load editing entry details if present
   useEffect(() => {
@@ -162,11 +187,9 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
                 backgroundColor: 'white'
               }}
             >
-              <option value="Work">Work</option>
-              <option value="Study">Study</option>
-              <option value="Skill">Skill</option>
-              <option value="Expense">Expense</option>
-              <option value="Personal">Personal</option>
+              {types.map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
             </select>
             {errors.type && (
               <span style={{ color: 'var(--danger-color)', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.type}</span>

@@ -40,8 +40,21 @@ $entryTime = isset($input['entry_time']) ? trim($input['entry_time']) : '';
 $content = isset($input['content']) ? trim($input['content']) : '';
 $amount = isset($input['amount']) ? $input['amount'] : null;
 
+try {
+    $db = getDatabaseConnection();
+    
+    // Fetch custom types to validate against
+    $typeStmt = $db->prepare("SELECT name FROM activity_types WHERE user_id = ?");
+    $typeStmt->execute([$userId]);
+    $customTypes = $typeStmt->fetchAll(PDO::FETCH_COLUMN);
+    $allowedTypes = array_merge(['Study', 'Skill', 'Expense', 'Personal', 'Work'], $customTypes);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()]);
+    exit();
+}
+
 // Validation
-$allowedTypes = ['Study', 'Skill', 'Expense', 'Personal', 'Work'];
 $errors = [];
 
 if (empty($type) || !in_array($type, $allowedTypes)) {

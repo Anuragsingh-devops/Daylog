@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { listEntriesApi, deleteEntryApi } from '../services/api';
+import { listEntriesApi, deleteEntryApi, listActivityTypesApi } from '../services/api';
 
 export default function History({ onEditEntry }) {
   const [entries, setEntries] = useState([]);
@@ -8,10 +8,25 @@ export default function History({ onEditEntry }) {
 
   // Filter States
   const [search, setSearch] = useState('');
+  const [types, setTypes] = useState(['Work', 'Study', 'Skill', 'Expense', 'Personal']);
   const [selectedTypes, setSelectedTypes] = useState(['Work', 'Study', 'Skill', 'Expense', 'Personal']);
   const [range, setRange] = useState('this_month'); // Default to last 30 days
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+
+  // Load custom activity types
+  useEffect(() => {
+    async function fetchTypes() {
+      try {
+        const result = await listActivityTypesApi();
+        setTypes(result.types);
+        setSelectedTypes(result.types);
+      } catch (err) {
+        console.error('Failed to load activity types:', err);
+      }
+    }
+    fetchTypes();
+  }, []);
 
   const handleTypeCheckboxChange = (t) => {
     if (selectedTypes.includes(t)) {
@@ -38,7 +53,7 @@ export default function History({ onEditEntry }) {
     try {
       // If all are selected, we don't need to specify types (returns all). If none are checked, send empty string.
       // Otherwise send joined comma-separated string.
-      const typeParam = selectedTypes.length === 5 ? 'All' : selectedTypes.join(',');
+      const typeParam = selectedTypes.length === types.length ? 'All' : selectedTypes.join(',');
       const params = { range, type: typeParam, search };
       if (range === 'custom') {
         params.from_date = fromDate;
@@ -107,7 +122,7 @@ export default function History({ onEditEntry }) {
 
   // Trigger PDF Export
   const handleExportPDF = () => {
-    const typeParam = selectedTypes.length === 5 ? 'All' : selectedTypes.join(',');
+    const typeParam = selectedTypes.length === types.length ? 'All' : selectedTypes.join(',');
     const queryParams = new URLSearchParams({
       range,
       type: typeParam,
@@ -155,7 +170,7 @@ export default function History({ onEditEntry }) {
           <div style={{ gridColumn: 'span 2' }}>
             <span style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '8px' }}>Activity Types</span>
             <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center', minHeight: '38px' }}>
-              {['Work', 'Study', 'Skill', 'Expense', 'Personal'].map(t => (
+              {types.map(t => (
                 <label key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', cursor: 'pointer', fontWeight: '500' }}>
                   <input 
                     type="checkbox" 
