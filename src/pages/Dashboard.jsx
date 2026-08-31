@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { listEntriesApi, deleteEntryApi } from '../services/api';
+import { listEntriesApi, deleteEntryApi, listActivityTypesApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import AdminDashboard from './AdminDashboard';
 
@@ -12,6 +12,8 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
   }
 
   const [entries, setEntries] = useState([]);
+  const [types, setTypes] = useState([]);
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -39,7 +41,19 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
     }
   };
 
+  // Load activity types
   useEffect(() => {
+    async function loadTypes() {
+      try {
+        const res = await listActivityTypesApi();
+        if (res && res.types) {
+          setTypes(res.types);
+        }
+      } catch (err) {
+        console.error('Failed to load activity types:', err);
+      }
+    }
+    loadTypes();
     fetchTodayEntries();
   }, []);
 
@@ -59,6 +73,11 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
   const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
   const formattedDate = new Date().toLocaleDateString('en-US', dateOptions);
 
+  // Filter entries by selected activity type
+  const filteredEntries = selectedTypeFilter === 'All'
+    ? entries
+    : entries.filter(e => e.type.toLowerCase() === selectedTypeFilter.toLowerCase());
+
   return (
     <div className="dashboard-grid">
       {/* Main Area: Daily Log */}
@@ -75,6 +94,52 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
           </div>
 
           <h2 className="card-title">Today's Log</h2>
+
+          {/* Activity Type Filter Buttons */}
+          {entries.length > 0 && (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px', alignItems: 'center' }}>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>Filter by Type:</span>
+              <button
+                onClick={() => setSelectedTypeFilter('All')}
+                style={{
+                  padding: '4px 12px',
+                  borderRadius: '16px',
+                  border: '1px solid var(--border-color)',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  backgroundColor: selectedTypeFilter === 'All' ? 'var(--primary-color)' : 'var(--card-background)',
+                  color: selectedTypeFilter === 'All' ? '#ffffff' : 'var(--text-color)',
+                  transition: 'var(--transition)'
+                }}
+              >
+                All ({entries.length})
+              </button>
+              {types.map(t => {
+                const count = entries.filter(e => e.type.toLowerCase() === t.toLowerCase()).length;
+                const isSelected = selectedTypeFilter.toLowerCase() === t.toLowerCase();
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setSelectedTypeFilter(t)}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      border: '1px solid var(--border-color)',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      backgroundColor: isSelected ? 'var(--primary-color)' : 'var(--card-background)',
+                      color: isSelected ? '#ffffff' : 'var(--text-color)',
+                      transition: 'var(--transition)'
+                    }}
+                  >
+                    {t} {count > 0 ? `(${count})` : ''}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {errorMessage && (
             <div className="status-badge danger" style={{ width: '100%', marginBottom: '16px' }}>
@@ -94,9 +159,19 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
                 Log Your First Activity
               </button>
             </div>
+          ) : filteredEntries.length === 0 ? (
+            <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: 'var(--border-radius)', margin: '10px 0' }}>
+              <p style={{ fontSize: '14px', marginBottom: '8px' }}>No "{selectedTypeFilter}" entries found for today.</p>
+              <button 
+                onClick={() => setSelectedTypeFilter('All')} 
+                style={{ background: 'none', border: 'none', color: 'var(--primary-color)', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}
+              >
+                View all entries ({entries.length})
+              </button>
+            </div>
           ) : (
             <div>
-              {entries.map(entry => {
+              {filteredEntries.map(entry => {
                 // Format time to AM/PM for user readability
                 let formattedTime = entry.entry_time;
                 try {
