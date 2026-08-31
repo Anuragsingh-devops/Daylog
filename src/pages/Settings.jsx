@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { listActivityTypesApi, createActivityTypeApi } from '../services/api';
+import { listActivityTypesApi, createActivityTypeApi, deleteActivityTypeApi } from '../services/api';
 
 export default function Settings() {
   const [darkMode, setDarkMode] = useState(
@@ -72,6 +72,32 @@ export default function Settings() {
       setTimeout(() => setTypeSuccess(''), 3000);
     } catch (err) {
       setTypeError(err.message || 'Failed to create activity type.');
+    }
+  };
+
+  // Delete a Custom Activity Type
+  const handleDeleteType = async (name) => {
+    setTypeError('');
+    setTypeSuccess('');
+    
+    if (!window.confirm(`Are you sure you want to delete the activity type "${name}"?`)) {
+      return;
+    }
+
+    try {
+      const result = await deleteActivityTypeApi(name);
+      setTypeSuccess(result.message || 'Activity type deleted successfully.');
+      
+      // If the deleted type was our current selected default preference, reset default type to standard default 'Work'
+      if (defaultType === name) {
+        setDefaultType('Work');
+        localStorage.setItem('defaultActivityType', 'Work');
+      }
+
+      fetchTypes(); // Reload types list
+      setTimeout(() => setTypeSuccess(''), 3000);
+    } catch (err) {
+      setTypeError(err.message || 'Failed to delete activity type.');
     }
   };
 
@@ -203,9 +229,38 @@ export default function Settings() {
                   <span 
                     key={t} 
                     className="entry-type" 
-                    style={{ margin: 0, padding: '4px 10px', fontSize: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--background-color)', display: 'inline-block' }}
+                    style={{ 
+                      margin: 0, 
+                      padding: '4px 8px 4px 10px', 
+                      fontSize: '12px', 
+                      border: '1px solid var(--border-color)', 
+                      backgroundColor: 'var(--background-color)', 
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
                   >
                     {t}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteType(t)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--danger-color)',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        padding: '0 2px',
+                        lineHeight: 1,
+                        fontWeight: 'bold',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      title={`Delete ${t}`}
+                    >
+                      ×
+                    </button>
                   </span>
                 ))}
               </div>

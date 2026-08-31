@@ -227,4 +227,22 @@ export async function createActivityTypeApi(name) {
   return data;
 }
 
+/**
+ * Delete a custom activity type.
+ * @param {string} name 
+ */
+export async function deleteActivityTypeApi(name) {
+  const response = await fetch('/api/activity_types/delete.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to delete activity type.');
+  }
+  return data;
+}
+
+
 
