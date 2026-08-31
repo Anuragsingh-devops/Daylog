@@ -79,10 +79,8 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
     : entries.filter(e => e.type.toLowerCase() === selectedTypeFilter.toLowerCase());
 
   return (
-    <div className="dashboard-grid">
-      {/* Main Area: Daily Log */}
-      <div>
-        <div className="card">
+    <div>
+      <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
             <div>
               <h1 style={{ fontSize: '24px', fontWeight: '700' }}>Dashboard</h1>
@@ -220,20 +218,6 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Sidebar: Dynamic Stats */}
-      <div>
-        <div className="card">
-          <h2 className="card-title">Daily Summary</h2>
-          <div className="stats-list">
-            <div className="stat-row">
-              <span>Today's Entries</span>
-              <span className="stat-val">{entries.length}</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
