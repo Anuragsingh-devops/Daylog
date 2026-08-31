@@ -10,9 +10,11 @@ import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import AdminDashboard from './pages/AdminDashboard'
 
+const SECRET_ADMIN_HASH = '#/portal-ctrl-928';
+
 function AppContent() {
   const { user, loading: authLoading, logout } = useAuth();
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'add-entry', 'history', 'login', 'register'
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'add-entry', 'history', 'login', 'register', 'admin'
   const [editingEntry, setEditingEntry] = useState(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   
@@ -22,6 +24,9 @@ function AppContent() {
     data: null,
     error: null
   });
+
+  // Helper to check if current URL points to secret admin portal
+  const isSecretAdminRoute = () => window.location.hash === SECRET_ADMIN_HASH || window.location.hash.includes('portal-ctrl-928');
 
   // Close dropdown when clicking anywhere outside
   useEffect(() => {
@@ -53,13 +58,37 @@ function AppContent() {
     checkConnection();
   }, []);
 
-  // When user logged state changes, reset view to dashboard
+  // Sync view based on URL hash and auth state
   useEffect(() => {
-    if (user) {
-      setCurrentView('dashboard');
-    } else {
-      setCurrentView('login');
+    if (!authLoading) {
+      if (user) {
+        if (isSecretAdminRoute()) {
+          if (user.role === 'admin') {
+            setCurrentView('admin');
+          } else {
+            setCurrentView('dashboard');
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        } else {
+          setCurrentView('dashboard');
+        }
+      } else {
+        setCurrentView('login');
+      }
     }
+  }, [user, authLoading]);
+
+  // Listen for browser navigation / direct hash changes
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (isSecretAdminRoute()) {
+        if (user && user.role === 'admin') {
+          setCurrentView('admin');
+        }
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, [user]);
 
   if (authLoading) {
@@ -86,6 +115,13 @@ function AppContent() {
       setEditingEntry(null);
     }
     setCurrentView(view);
+
+    // Sync secret hash URL
+    if (view === 'admin') {
+      window.location.hash = '/portal-ctrl-928';
+    } else if (isSecretAdminRoute()) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
   };
 
   const handleEditEntry = (entry) => {

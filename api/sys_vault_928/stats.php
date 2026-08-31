@@ -1,6 +1,6 @@
 <?php
 /**
- * DailyTrack Admin Statistics API
+ * DailyTrack Secret System Management Statistics API
  */
 
 define('DAILYTRACK_SECURE', true);

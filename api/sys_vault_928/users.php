@@ -1,6 +1,6 @@
 <?php
 /**
- * DailyTrack Admin Users Management API
+ * DailyTrack Secret System User Management API
  */
 
 define('DAILYTRACK_SECURE', true);

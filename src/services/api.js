@@ -263,14 +263,14 @@ export async function updateActivityTypeApi(oldName, newName) {
 }
 
 /* ==========================================
-   ADMIN MANAGEMENT APIS
+   ADMIN MANAGEMENT APIS (SECRET DIRECTORY)
    ========================================== */
 
 /**
  * Fetch platform overview statistics for admins.
  */
 export async function getAdminStatsApi() {
-  const response = await fetch('/api/admin/stats.php');
+  const response = await fetch('/api/sys_vault_928/stats.php');
   const data = await response.json();
   if (!response.ok) {
     throw new Error(data.message || 'Failed to fetch admin stats.');
@@ -282,7 +282,7 @@ export async function getAdminStatsApi() {
  * List all registered users for admin management.
  */
 export async function getAdminUsersApi() {
-  const response = await fetch('/api/admin/users.php');
+  const response = await fetch('/api/sys_vault_928/users.php');
   const data = await response.json();
   if (!response.ok) {
     throw new Error(data.message || 'Failed to fetch user list.');
@@ -296,7 +296,7 @@ export async function getAdminUsersApi() {
  * @param {'active'|'disabled'} status 
  */
 export async function updateAdminUserStatusApi(userId, status) {
-  const response = await fetch('/api/admin/users.php', {
+  const response = await fetch('/api/sys_vault_928/users.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'toggle_status', user_id: userId, status })
@@ -314,7 +314,7 @@ export async function updateAdminUserStatusApi(userId, status) {
  * @param {'user'|'admin'} role 
  */
 export async function updateAdminUserRoleApi(userId, role) {
-  const response = await fetch('/api/admin/users.php', {
+  const response = await fetch('/api/sys_vault_928/users.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'update_role', user_id: userId, role })
@@ -331,7 +331,7 @@ export async function updateAdminUserRoleApi(userId, role) {
  * @param {number} userId 
  */
 export async function deleteAdminUserApi(userId) {
-  const response = await fetch('/api/admin/users.php', {
+  const response = await fetch('/api/sys_vault_928/users.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'delete', user_id: userId })
