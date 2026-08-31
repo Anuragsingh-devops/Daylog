@@ -15,7 +15,7 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   };
 
-  const [type, setType] = useState('Work');
+  const [type, setType] = useState(localStorage.getItem('defaultActivityType') || 'Work');
   const [entryDate, setEntryDate] = useState(getLocalDateString());
   const [entryTime, setEntryTime] = useState(getLocalTimeString());
   const [content, setContent] = useState('');

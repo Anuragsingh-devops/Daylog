@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import AddEntry from './pages/AddEntry'
 import History from './pages/History'
 import Profile from './pages/Profile'
+import Settings from './pages/Settings'
 
 function AppContent() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -185,6 +186,27 @@ function AppContent() {
                   >
                     ⚙️ Profile
                   </a>
+                  <a 
+                    href="#" 
+                    onClick={(e) => { 
+                      e.preventDefault(); 
+                      navigateTo('settings'); 
+                      setUserDropdownOpen(false); 
+                    }}
+                    style={{
+                      padding: '10px 16px',
+                      textDecoration: 'none',
+                      color: 'var(--text-color)',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      transition: 'var(--transition)',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--border-color)'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >
+                    🔧 Settings
+                  </a>
                   <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
                   <a 
                     href="#" 
@@ -266,6 +288,10 @@ function AppContent() {
 
         {currentView === 'profile' && (
           <Profile />
+        )}
+
+        {currentView === 'settings' && (
+          <Settings />
         )}
       </main>
     </div>
