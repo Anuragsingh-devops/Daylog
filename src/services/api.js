@@ -368,6 +368,7 @@ export async function listTodosApi(params = {}) {
   if (params.status) query.append('status', params.status);
   if (params.priority) query.append('priority', params.priority);
   if (params.filter) query.append('filter', params.filter);
+  if (params.month) query.append('month', params.month);
   if (params.search) query.append('search', params.search);
 
   const url = `/api/todos/index.php${query.toString() ? '?' + query.toString() : ''}`;

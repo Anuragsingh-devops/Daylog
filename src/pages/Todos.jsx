@@ -15,6 +15,16 @@ export default function Todos() {
   const [search, setSearch] = useState('');
   const [feedback, setFeedback] = useState({ message: '', type: '' });
 
+  // Month navigation state (format: 'YYYY-MM' or 'all')
+  const getCurrentYearMonth = () => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${yyyy}-${mm}`;
+  };
+
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentYearMonth());
+
   // New task form state
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -37,6 +47,9 @@ export default function Todos() {
     setLoading(true);
     try {
       const params = {};
+      if (selectedMonth && selectedMonth !== 'all') {
+        params.month = selectedMonth;
+      }
       if (filter === 'pending') params.status = 'pending';
       if (filter === 'completed') params.status = 'completed';
       if (filter === 'today') params.filter = 'today';
@@ -58,11 +71,51 @@ export default function Todos() {
 
   useEffect(() => {
     fetchTodos();
-  }, [filter, search]);
+  }, [filter, search, selectedMonth]);
 
   const showNotification = (msg, type = 'success') => {
     setFeedback({ message: msg, type });
     setTimeout(() => setFeedback({ message: '', type: '' }), 4000);
+  };
+
+  // Month navigation helpers
+  const getFormattedMonthLabel = (monthStr) => {
+    if (monthStr === 'all') return 'All Time (No Month Filter)';
+    const [yyyy, mm] = monthStr.split('-');
+    const date = new Date(parseInt(yyyy, 10), parseInt(mm, 10) - 1, 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const handlePrevMonth = () => {
+    if (selectedMonth === 'all') {
+      setSelectedMonth(getCurrentYearMonth());
+      return;
+    }
+    const [yyyy, mm] = selectedMonth.split('-').map(Number);
+    const prevDate = new Date(yyyy, mm - 2, 1);
+    const newYyyy = prevDate.getFullYear();
+    const newMm = String(prevDate.getMonth() + 1).padStart(2, '0');
+    setSelectedMonth(`${newYyyy}-${newMm}`);
+  };
+
+  const handleNextMonth = () => {
+    if (selectedMonth === 'all') {
+      setSelectedMonth(getCurrentYearMonth());
+      return;
+    }
+    const [yyyy, mm] = selectedMonth.split('-').map(Number);
+    const nextDate = new Date(yyyy, mm, 1);
+    const newYyyy = nextDate.getFullYear();
+    const newMm = String(nextDate.getMonth() + 1).padStart(2, '0');
+    setSelectedMonth(`${newYyyy}-${newMm}`);
+  };
+
+  const handleCurrentMonth = () => {
+    setSelectedMonth(getCurrentYearMonth());
+  };
+
+  const handleToggleAllMonths = () => {
+    setSelectedMonth(selectedMonth === 'all' ? getCurrentYearMonth() : 'all');
   };
 
   const handleCreateTodo = async (e) => {
@@ -170,7 +223,7 @@ export default function Todos() {
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: '700' }}>To-Do & Tasks</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>
-            Plan, organize, and manage daily, weekly, and monthly recurring routines
+            Plan, organize, and view monthly routines by selected month
           </p>
         </div>
       </div>
@@ -182,10 +235,87 @@ export default function Todos() {
         </div>
       )}
 
+      {/* Interactive Month Selector Bar */}
+      <div className="card" style={{ padding: '12px 18px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', backgroundColor: '#f8fafc' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            onClick={handlePrevMonth}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--card-background)',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+            title="Previous month"
+          >
+            ◀ Prev Month
+          </button>
+
+          <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-color)', minWidth: '160px', textAlign: 'center' }}>
+            📅 {getFormattedMonthLabel(selectedMonth)}
+          </span>
+
+          <button
+            onClick={handleNextMonth}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--card-background)',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+            title="Next month"
+          >
+            Next Month ▶
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            onClick={handleCurrentMonth}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid var(--primary-color)',
+              backgroundColor: selectedMonth === getCurrentYearMonth() ? 'var(--primary-color)' : 'transparent',
+              color: selectedMonth === getCurrentYearMonth() ? '#ffffff' : 'var(--primary-color)',
+              fontSize: '12px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            Current Month
+          </button>
+
+          <button
+            onClick={handleToggleAllMonths}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid var(--border-color)',
+              backgroundColor: selectedMonth === 'all' ? 'var(--primary-color)' : 'transparent',
+              color: selectedMonth === 'all' ? '#ffffff' : 'var(--text-muted)',
+              fontSize: '12px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            {selectedMonth === 'all' ? 'Filtering: All Time' : 'View All Months'}
+          </button>
+        </div>
+      </div>
+
       {/* Progress & Overview Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px', marginBottom: '24px' }}>
         <div className="card" style={{ padding: '16px' }}>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>TOTAL TASKS</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>
+            {selectedMonth === 'all' ? 'TOTAL TASKS' : 'TASKS IN ' + getFormattedMonthLabel(selectedMonth).toUpperCase()}
+          </div>
           <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '4px' }}>{stats.total}</div>
         </div>
         <div className="card" style={{ padding: '16px' }}>
@@ -313,7 +443,7 @@ export default function Todos() {
           {/* Filter Tabs */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {[
-              { id: 'all', label: 'All', count: stats.total },
+              { id: 'all', label: 'All Tasks', count: stats.total },
               { id: 'today', label: 'Today', count: stats.today_pending },
               { id: 'pending', label: 'Pending', count: stats.pending },
               { id: 'recurring', label: '🔁 Monthly / Recurring', count: stats.recurring },
@@ -356,13 +486,13 @@ export default function Todos() {
         {/* Task List */}
         {loading ? (
           <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            Loading tasks...
+            Loading tasks for {getFormattedMonthLabel(selectedMonth)}...
           </div>
         ) : todos.length === 0 ? (
           <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <div style={{ fontSize: '32px', marginBottom: '8px' }}>📝</div>
-            <p style={{ fontSize: '15px', fontWeight: '500' }}>No tasks found in this view.</p>
-            <p style={{ fontSize: '13px', marginTop: '4px' }}>Add a new task above to get started!</p>
+            <p style={{ fontSize: '15px', fontWeight: '500' }}>No tasks found for {getFormattedMonthLabel(selectedMonth)}.</p>
+            <p style={{ fontSize: '13px', marginTop: '4px' }}>Add a new task above or navigate to another month!</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

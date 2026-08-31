@@ -62,10 +62,17 @@ try {
         $priority = isset($_GET['priority']) ? trim($_GET['priority']) : 'all';
         $dateFilter = isset($_GET['filter']) ? trim($_GET['filter']) : 'all';
         $recurrence = isset($_GET['recurrence']) ? trim($_GET['recurrence']) : 'all';
+        $month = isset($_GET['month']) ? trim($_GET['month']) : '';
         $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
         $query = "SELECT * FROM todos WHERE user_id = :user_id";
         $params = [':user_id' => $userId];
+
+        if (!empty($month) && $month !== 'all') {
+            $query .= " AND (due_date LIKE :month_pattern OR (due_date IS NULL AND created_at LIKE :month_created_pattern))";
+            $params[':month_pattern'] = $month . '-%';
+            $params[':month_created_pattern'] = $month . '-%';
+        }
 
         if ($status === 'pending' || $status === 'completed') {
             $query .= " AND status = :status";
@@ -103,8 +110,8 @@ try {
         $stmt->execute($params);
         $todos = $stmt->fetchAll();
 
-        // Calculate user-wide stats using native SQL functions
-        $statsStmt = $db->prepare("
+        // Calculate stats for the active view
+        $statsQuery = "
             SELECT 
                 COUNT(*) as total,
                 SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
@@ -113,9 +120,17 @@ try {
                 SUM(CASE WHEN due_date < CURDATE() AND status = 'pending' THEN 1 ELSE 0 END) as overdue,
                 SUM(CASE WHEN recurrence != 'none' AND status = 'pending' THEN 1 ELSE 0 END) as recurring
             FROM todos
-            WHERE user_id = ?
-        ");
-        $statsStmt->execute([$userId]);
+            WHERE user_id = :user_id
+        ";
+        $statsParams = [':user_id' => $userId];
+        if (!empty($month) && $month !== 'all') {
+            $statsQuery .= " AND (due_date LIKE :month_pattern OR (due_date IS NULL AND created_at LIKE :month_created_pattern))";
+            $statsParams[':month_pattern'] = $month . '-%';
+            $statsParams[':month_created_pattern'] = $month . '-%';
+        }
+
+        $statsStmt = $db->prepare($statsQuery);
+        $statsStmt->execute($statsParams);
         $stats = $statsStmt->fetch();
 
         echo json_encode([
