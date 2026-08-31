@@ -38,7 +38,7 @@ try {
     $db = getDatabaseConnection();
     
     // Fetch latest user details to ensure status is still active
-    $stmt = $db->prepare("SELECT id, name, email, role, status FROM users WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, name, email, role, status, created_at FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch();
     
@@ -67,7 +67,8 @@ try {
             'name' => $user['name'],
             'email' => $user['email'],
             'role' => $user['role'],
-            'status' => $user['status']
+            'status' => $user['status'],
+            'created_at' => $user['created_at']
         ]
     ]);
 } catch (Exception $e) {

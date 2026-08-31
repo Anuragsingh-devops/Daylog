@@ -178,3 +178,23 @@ export async function deleteEntryApi(id) {
   }
   return data;
 }
+
+/**
+ * Update the user profile.
+ * @param {Object} profileData {name, password, confirmPassword}
+ */
+export async function updateProfileApi(profileData) {
+  const response = await fetch('/api/users/update-profile.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(profileData)
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const err = new Error(data.message || 'Failed to update profile.');
+    err.errors = data.errors || {};
+    throw err;
+  }
+  return data;
+}
+

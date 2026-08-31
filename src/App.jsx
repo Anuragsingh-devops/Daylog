@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import AddEntry from './pages/AddEntry'
 import History from './pages/History'
+import Profile from './pages/Profile'
 
 function AppContent() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -108,7 +109,15 @@ function AppContent() {
                   Reports
                 </a>
               </li>
-              <li><a href="#">Profile</a></li>
+              <li>
+                <a 
+                  href="#" 
+                  onClick={(e) => { e.preventDefault(); navigateTo('profile'); }} 
+                  className={currentView === 'profile' ? 'active' : ''}
+                >
+                  Profile
+                </a>
+              </li>
               {user.role === 'admin' && (
                 <li><a href="#" style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '20px', marginLeft: '10px', color: 'var(--danger-color)' }}>Admin Dash</a></li>
               )}
@@ -177,6 +186,10 @@ function AppContent() {
           <History 
             onEditEntry={handleEditEntry}
           />
+        )}
+
+        {currentView === 'profile' && (
+          <Profile />
         )}
       </main>
     </div>

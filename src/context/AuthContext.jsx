@@ -57,6 +57,10 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+  };
+
   const value = {
     user,
     loading,
@@ -64,6 +68,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin'
   };
