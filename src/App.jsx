@@ -16,6 +16,7 @@ function AppContent() {
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'add-entry', 'history', 'login', 'register', 'admin'
   const [editingEntry, setEditingEntry] = useState(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Helper to check if current URL points to secret admin portal
   const isSecretAdminRoute = () => window.location.hash === SECRET_ADMIN_HASH || window.location.hash.includes('portal-ctrl-928');
@@ -85,6 +86,8 @@ function AppContent() {
       setEditingEntry(null);
     }
     setCurrentView(view);
+    setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
 
     // Sync secret hash URL
     if (view === 'admin') {
@@ -106,7 +109,9 @@ function AppContent() {
           <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('dashboard'); }} className="logo">
             <span>⏱️</span> DailyTrack
           </a>
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+
+          {/* Desktop Nav Links */}
+          <nav style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             <ul className="nav-links">
               <li>
                 <a 
@@ -136,6 +141,8 @@ function AppContent() {
                 </a>
               </li>
             </ul>
+
+            {/* User Dropdown */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <button 
                 onClick={(e) => {
@@ -144,15 +151,15 @@ function AppContent() {
                 }}
                 style={{
                   background: 'none',
-                  border: 'none',
-                  fontSize: '14px',
+                  border: '1px solid var(--border-color)',
+                  fontSize: '13px',
                   fontWeight: '600',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
                   color: 'var(--text-color)',
-                  padding: '8px 12px',
+                  padding: '6px 12px',
                   borderRadius: 'var(--border-radius)',
                   transition: 'var(--transition)'
                 }}
@@ -173,7 +180,7 @@ function AppContent() {
                   borderRadius: 'var(--border-radius)',
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                   zIndex: 1000,
-                  minWidth: '150px',
+                  minWidth: '160px',
                   display: 'flex',
                   flexDirection: 'column',
                   padding: '6px 0'
@@ -183,7 +190,6 @@ function AppContent() {
                     onClick={(e) => { 
                       e.preventDefault(); 
                       navigateTo('profile'); 
-                      setUserDropdownOpen(false); 
                     }}
                     style={{
                       padding: '10px 16px',
@@ -191,11 +197,8 @@ function AppContent() {
                       color: 'var(--text-color)',
                       fontSize: '14px',
                       fontWeight: '500',
-                      transition: 'var(--transition)',
                       textAlign: 'left'
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--border-color)'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
                     ⚙️ Profile
                   </a>
@@ -204,7 +207,6 @@ function AppContent() {
                     onClick={(e) => { 
                       e.preventDefault(); 
                       navigateTo('settings'); 
-                      setUserDropdownOpen(false); 
                     }}
                     style={{
                       padding: '10px 16px',
@@ -212,41 +214,103 @@ function AppContent() {
                       color: 'var(--text-color)',
                       fontSize: '14px',
                       fontWeight: '500',
-                      transition: 'var(--transition)',
                       textAlign: 'left'
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--border-color)'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
-                    🔧 Settings
+                    🎨 Preferences
                   </a>
-                  <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
-                  <a 
-                    href="#" 
-                    onClick={(e) => { 
-                      e.preventDefault(); 
-                      logout(); 
-                      setUserDropdownOpen(false); 
-                    }}
+                  <div style={{ borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
+                  <button 
+                    onClick={() => logout()}
                     style={{
+                      background: 'none',
+                      border: 'none',
                       padding: '10px 16px',
-                      textDecoration: 'none',
                       color: 'var(--danger-color)',
                       fontSize: '14px',
                       fontWeight: '600',
-                      transition: 'var(--transition)',
+                      cursor: 'pointer',
                       textAlign: 'left'
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
                     🚪 Logout
-                  </a>
+                  </button>
                 </div>
               )}
             </div>
+
+            {/* Mobile Hamburger Button */}
+            <button 
+              className="mobile-menu-btn"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              title="Toggle mobile menu"
+            >
+              {mobileMenuOpen ? '✕' : '☰'}
+            </button>
           </nav>
         </div>
+
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="mobile-nav-drawer open">
+            <a 
+              href="#" 
+              onClick={(e) => { e.preventDefault(); navigateTo('dashboard'); }} 
+              className={currentView === 'dashboard' ? 'active' : ''}
+            >
+              ⏱️ Dashboard
+            </a>
+            <a 
+              href="#" 
+              onClick={(e) => { e.preventDefault(); navigateTo('todos'); }} 
+              className={currentView === 'todos' ? 'active' : ''}
+            >
+              📝 To-Do & Tasks
+            </a>
+            <a 
+              href="#" 
+              onClick={(e) => { e.preventDefault(); navigateTo('history'); }} 
+              className={currentView === 'history' ? 'active' : ''}
+            >
+              📊 Reports & History
+            </a>
+            <a 
+              href="#" 
+              onClick={(e) => { e.preventDefault(); navigateTo('profile'); }} 
+              className={currentView === 'profile' ? 'active' : ''}
+            >
+              👤 My Profile
+            </a>
+            <a 
+              href="#" 
+              onClick={(e) => { e.preventDefault(); navigateTo('settings'); }} 
+              className={currentView === 'settings' ? 'active' : ''}
+            >
+              ⚙️ Settings & Categories
+            </a>
+            <button 
+              onClick={() => logout()}
+              style={{
+                background: 'none',
+                border: '1px solid #fecaca',
+                backgroundColor: '#fef2f2',
+                color: 'var(--danger-color)',
+                padding: '10px 14px',
+                borderRadius: 'var(--border-radius)',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                textAlign: 'left',
+                marginTop: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              🚪 Sign Out
+            </button>
+          </div>
+        )}
       </header>
 
       <main className="container">

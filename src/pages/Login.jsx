@@ -24,7 +24,7 @@ export default function Login({ onNavigate }) {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '60px auto', padding: '0 20px' }}>
+    <div style={{ maxWidth: '420px', margin: '40px auto', width: '100%', padding: '0 12px' }}>
       <div className="card">
         <h1 style={{ textAlign: 'center', marginBottom: '24px', fontSize: '28px', fontWeight: '800', color: 'var(--primary-color)' }}>
           ⏱️ DailyTrack

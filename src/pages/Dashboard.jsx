@@ -81,12 +81,16 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
   return (
     <div>
       <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
             <div>
               <h1 style={{ fontSize: '24px', fontWeight: '700' }}>Dashboard</h1>
-              <p style={{ color: 'var(--text-muted)', fontSize: '15px', marginTop: '4px' }}>{formattedDate}</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>{formattedDate}</p>
             </div>
-            <button onClick={() => onNavigate('add-entry')} className="btn btn-primary">
+            <button 
+              onClick={() => onNavigate('add-entry')} 
+              className="btn btn-primary"
+              style={{ minHeight: '40px', padding: '0 18px' }}
+            >
               + Add Entry
             </button>
           </div>
@@ -95,17 +99,18 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
 
           {/* Activity Type Filter Buttons */}
           {entries.length > 0 && (
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px', alignItems: 'center' }}>
-              <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>Filter by Type:</span>
+            <div className="scroll-pills" style={{ marginBottom: '18px', alignItems: 'center' }}>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500', whiteSpace: 'nowrap' }}>Filter:</span>
               <button
                 onClick={() => setSelectedTypeFilter('All')}
                 style={{
-                  padding: '4px 12px',
+                  padding: '5px 14px',
                   borderRadius: '16px',
                   border: '1px solid var(--border-color)',
                   fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer',
+                  whiteSpace: 'nowrap',
                   backgroundColor: selectedTypeFilter === 'All' ? 'var(--primary-color)' : 'var(--card-background)',
                   color: selectedTypeFilter === 'All' ? '#ffffff' : 'var(--text-color)',
                   transition: 'var(--transition)'
@@ -121,12 +126,13 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
                     key={t}
                     onClick={() => setSelectedTypeFilter(t)}
                     style={{
-                      padding: '4px 12px',
+                      padding: '5px 14px',
                       borderRadius: '16px',
                       border: '1px solid var(--border-color)',
                       fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
+                      whiteSpace: 'nowrap',
                       backgroundColor: isSelected ? 'var(--primary-color)' : 'var(--card-background)',
                       color: isSelected ? '#ffffff' : 'var(--text-color)',
                       transition: 'var(--transition)'

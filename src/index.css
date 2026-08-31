@@ -17,6 +17,7 @@
   font-weight: 400;
   color: var(--text-color);
   background-color: var(--background-color);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dark-theme {
@@ -35,30 +36,42 @@
 
 body {
   min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow-x: hidden;
+}
+
+html {
+  height: -webkit-fill-available;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  width: 100%;
 }
 
 /* Header & Navigation */
 header {
   background-color: var(--card-background);
   border-bottom: 1px solid var(--border-color);
-  padding: 15px 0;
-  margin-bottom: 30px;
+  padding: 12px 0;
+  margin-bottom: 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
 }
 
 header .nav-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 
 .logo {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--primary-color);
   text-decoration: none;
@@ -69,8 +82,9 @@ header .nav-container {
 
 .nav-links {
   display: flex;
-  gap: 20px;
+  gap: 8px;
   list-style: none;
+  align-items: center;
 }
 
 .nav-links a {
@@ -78,8 +92,9 @@ header .nav-container {
   color: var(--text-color);
   font-weight: 500;
   transition: var(--transition);
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: var(--border-radius);
+  font-size: 14px;
 }
 
 .nav-links a:hover, .nav-links a.active {
@@ -87,17 +102,53 @@ header .nav-container {
   color: var(--primary-color);
 }
 
-/* Dashboard Mockup Grid */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 30px;
+/* Mobile Hamburger Button */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 8px 12px;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-color);
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  min-width: 40px;
 }
 
-@media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
+/* Mobile Navigation Drawer / Dropdown */
+.mobile-nav-drawer {
+  display: none;
+  flex-direction: column;
+  background-color: var(--card-background);
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 20px;
+  gap: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-nav-drawer.open {
+  display: flex;
+}
+
+.mobile-nav-drawer a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  color: var(--text-color);
+  font-size: 15px;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.mobile-nav-drawer a.active, .mobile-nav-drawer a:hover {
+  background-color: #eff6ff;
+  color: var(--primary-color);
 }
 
 /* Card Styles */
@@ -105,9 +156,10 @@ header .nav-container {
   background-color: var(--card-background);
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
-  padding: 24px;
+  padding: 22px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .card-title {
@@ -119,20 +171,53 @@ header .nav-container {
   padding-bottom: 8px;
 }
 
+/* Form Controls */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-color);
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--card-background);
+  color: var(--text-color);
+  transition: var(--transition);
+  outline: none;
+  font-family: inherit;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 20px;
-  font-size: 15px;
-  font-weight: 500;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
   border-radius: var(--border-radius);
   border: none;
   cursor: pointer;
   transition: var(--transition);
   text-decoration: none;
-  min-height: 44px; /* Touch target */
+  min-height: 42px; /* Touch target */
+  white-space: nowrap;
 }
 
 .btn-primary {
@@ -145,12 +230,13 @@ header .nav-container {
 }
 
 .btn-secondary {
-  background-color: var(--secondary-color);
-  color: white;
+  background-color: #f3f4f6;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-  opacity: 0.9;
+  background-color: #e5e7eb;
 }
 
 /* Status Indicator */
@@ -160,7 +246,7 @@ header .nav-container {
   gap: 6px;
   padding: 6px 12px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -189,11 +275,30 @@ header .nav-container {
   background-color: currentColor;
 }
 
-/* Dummy Entry List */
+/* Horizontal Scrollable Pill Containers */
+.scroll-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.scroll-pills::-webkit-scrollbar {
+  height: 4px;
+}
+
+.scroll-pills::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 4px;
+}
+
+/* Entry List Items */
 .entry-item {
   display: flex;
-  gap: 15px;
-  padding: 15px 0;
+  gap: 14px;
+  padding: 14px 0;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -204,19 +309,22 @@ header .nav-container {
 .entry-time {
   font-weight: 600;
   color: var(--text-muted);
-  font-size: 14px;
-  min-width: 70px;
+  font-size: 13px;
+  min-width: 75px;
+  white-space: nowrap;
 }
 
 .entry-body {
   flex-grow: 1;
+  min-width: 0; /* Prevents flex children from overflowing */
 }
 
 .entry-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 4px;
+  flex-wrap: wrap;
 }
 
 .entry-type {
@@ -224,7 +332,7 @@ header .nav-container {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 4px;
   background-color: var(--border-color);
 }
@@ -236,7 +344,8 @@ header .nav-container {
 .entry-type.personal { background-color: #f3f4f6; color: #374151; }
 
 .entry-content {
-  font-size: 15px;
+  font-size: 14px;
+  word-break: break-word;
 }
 
 .entry-amount {
@@ -244,19 +353,97 @@ header .nav-container {
   color: var(--danger-color);
 }
 
-/* Stats list */
-.stats-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* Responsive Table Wrapper */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 12px;
 }
 
-.stat-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 15px;
+/* -------------------------------------------------------------
+ * MEDIA QUERIES (Mobile & Tablet Responsiveness)
+ * ------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 12px 14px;
+  }
+
+  header {
+    margin-bottom: 16px;
+    padding: 10px 0;
+  }
+
+  /* Show mobile menu toggle, hide desktop nav links */
+  .nav-links {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .card {
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  /* Prevent font scaling issues on iOS Safari */
+  .form-control, input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Entry items stack vertically on smaller mobile screens */
+  .entry-item {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 0;
+  }
+
+  .entry-time {
+    min-width: unset;
+    font-size: 12px;
+  }
+
+  /* Buttons on mobile */
+  .btn {
+    min-height: 44px; /* Ensure 44px touch target */
+  }
+
+  /* Modal responsiveness */
+  .modal-overlay {
+    padding: 10px !important;
+  }
+
+  .modal-box {
+    width: 100% !important;
+    max-height: 92vh !important;
+  }
 }
 
-.stat-val {
-  font-weight: 600;
+@media (max-width: 480px) {
+  .container {
+    padding: 10px 12px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  .card {
+    padding: 14px;
+    border-radius: 6px;
+  }
+
+  /* Grid layouts become single-column or 2-column compact on phones */
+  .stats-grid-mobile {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
 }

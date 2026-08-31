@@ -186,39 +186,39 @@ export default function AdminDashboard({ onNavigate }) {
           {feedback.message}
         </div>
       )}
-
+      
       {/* KPI Stats Grid */}
       {stats && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-          <div className="card" style={{ marginBottom: 0, padding: '18px', borderLeft: '4px solid var(--primary-color)' }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>TOTAL USERS</div>
-            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '6px', color: 'var(--text-color)' }}>{stats.total_users}</div>
+        <div className="stats-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+          <div className="card" style={{ marginBottom: 0, padding: '16px', borderLeft: '4px solid var(--primary-color)' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>TOTAL USERS</div>
+            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '4px', color: 'var(--text-color)' }}>{stats.total_users}</div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
               {stats.active_users} active • {stats.disabled_users} disabled
             </div>
           </div>
 
-          <div className="card" style={{ marginBottom: 0, padding: '18px', borderLeft: '4px solid var(--success-color)' }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>TOTAL ACTIVITY LOGS</div>
-            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '6px', color: 'var(--text-color)' }}>{stats.total_entries}</div>
+          <div className="card" style={{ marginBottom: 0, padding: '16px', borderLeft: '4px solid var(--success-color)' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>TOTAL ACTIVITY LOGS</div>
+            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '4px', color: 'var(--text-color)' }}>{stats.total_entries}</div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
               Across all user accounts
             </div>
           </div>
 
-          <div className="card" style={{ marginBottom: 0, padding: '18px', borderLeft: '4px solid var(--warning-color)' }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>LOGGED TODAY</div>
-            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '6px', color: 'var(--text-color)' }}>{stats.today_entries}</div>
+          <div className="card" style={{ marginBottom: 0, padding: '16px', borderLeft: '4px solid var(--warning-color)' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>LOGGED TODAY</div>
+            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '4px', color: 'var(--text-color)' }}>{stats.today_entries}</div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              {stats.week_entries} logged in the past 7 days
+              {stats.week_entries} in past 7 days
             </div>
           </div>
 
-          <div className="card" style={{ marginBottom: 0, padding: '18px', borderLeft: '4px solid #8b5cf6' }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>ADMINISTRATORS</div>
-            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '6px', color: 'var(--text-color)' }}>{stats.admin_users}</div>
+          <div className="card" style={{ marginBottom: 0, padding: '16px', borderLeft: '4px solid #8b5cf6' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>ADMINISTRATORS</div>
+            <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '4px', color: 'var(--text-color)' }}>{stats.admin_users}</div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Users with admin privileges
+              Admin role privileges
             </div>
           </div>
         </div>
@@ -228,35 +228,24 @@ export default function AdminDashboard({ onNavigate }) {
       <div className="card" style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
           <h2 className="card-title" style={{ margin: 0, border: 'none', padding: 0 }}>
-            User Directory & Access Control ({filteredUsers.length})
+            User Directory ({filteredUsers.length})
           </h2>
           
           {/* Filters and Search */}
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', width: '100%', maxWidth: '500px' }}>
             <input 
               type="text" 
+              className="form-control"
               placeholder="Search user or email..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                padding: '8px 12px',
-                borderRadius: 'var(--border-radius)',
-                border: '1px solid var(--border-color)',
-                fontSize: '13px',
-                minWidth: '180px'
-              }}
+              style={{ flex: '1 1 160px', padding: '6px 12px', fontSize: '13px' }}
             />
             <select 
               value={roleFilter} 
+              className="form-control"
               onChange={(e) => setRoleFilter(e.target.value)}
-              style={{
-                padding: '8px 12px',
-                borderRadius: 'var(--border-radius)',
-                border: '1px solid var(--border-color)',
-                fontSize: '13px',
-                backgroundColor: 'var(--card-background)',
-                color: 'var(--text-color)'
-              }}
+              style={{ flex: '1 1 110px', padding: '6px 12px', fontSize: '13px' }}
             >
               <option value="all">All Roles</option>
               <option value="admin">Admins only</option>
@@ -264,15 +253,9 @@ export default function AdminDashboard({ onNavigate }) {
             </select>
             <select 
               value={statusFilter} 
+              className="form-control"
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{
-                padding: '8px 12px',
-                borderRadius: 'var(--border-radius)',
-                border: '1px solid var(--border-color)',
-                fontSize: '13px',
-                backgroundColor: 'var(--card-background)',
-                color: 'var(--text-color)'
-              }}
+              style={{ flex: '1 1 110px', padding: '6px 12px', fontSize: '13px' }}
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -282,7 +265,7 @@ export default function AdminDashboard({ onNavigate }) {
         </div>
 
         {/* Users Table */}
-        <div style={{ overflowX: 'auto' }}>
+        <div className="table-responsive">
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-muted)' }}>
@@ -378,25 +361,25 @@ export default function AdminDashboard({ onNavigate }) {
                               border: '1px solid var(--border-color)',
                               backgroundColor: 'var(--card-background)',
                               cursor: isSelf || isOperating ? 'not-allowed' : 'pointer',
-                              opacity: isSelf ? 0.4 : 1
+                              fontWeight: '500'
                             }}
                           >
-                            {u.role === 'admin' ? 'Demote' : 'Promote'}
+                            Role
                           </button>
 
                           <button
                             onClick={() => handleToggleStatus(u)}
                             disabled={isSelf || isOperating}
-                            title={isSelf ? 'Cannot disable own account' : `${u.status === 'active' ? 'Disable' : 'Enable'} user`}
+                            title={isSelf ? 'Cannot modify own status' : u.status === 'active' ? 'Deactivate user' : 'Activate user'}
                             style={{
                               padding: '4px 8px',
                               fontSize: '12px',
                               borderRadius: '4px',
                               border: '1px solid var(--border-color)',
-                              backgroundColor: u.status === 'active' ? '#fff1f2' : '#f0fdf4',
-                              color: u.status === 'active' ? '#be123c' : '#15803d',
+                              backgroundColor: 'var(--card-background)',
                               cursor: isSelf || isOperating ? 'not-allowed' : 'pointer',
-                              opacity: isSelf ? 0.4 : 1
+                              fontWeight: '500',
+                              color: u.status === 'active' ? 'var(--warning-color)' : 'var(--success-color)'
                             }}
                           >
                             {u.status === 'active' ? 'Deactivate' : 'Activate'}
@@ -405,19 +388,19 @@ export default function AdminDashboard({ onNavigate }) {
                           <button
                             onClick={() => handleDeleteUser(u)}
                             disabled={isSelf || isOperating}
-                            title={isSelf ? 'Cannot delete own account' : 'Delete user permanently'}
+                            title={isSelf ? 'Cannot delete own account' : 'Delete user and all logs'}
                             style={{
                               padding: '4px 8px',
                               fontSize: '12px',
                               borderRadius: '4px',
-                              border: '1px solid #fecaca',
-                              backgroundColor: '#fef2f2',
+                              border: 'none',
+                              backgroundColor: '#fee2e2',
                               color: 'var(--danger-color)',
                               cursor: isSelf || isOperating ? 'not-allowed' : 'pointer',
-                              opacity: isSelf ? 0.4 : 1
+                              fontWeight: '600'
                             }}
                           >
-                            🗑️
+                            Del
                           </button>
                         </div>
                       </td>
@@ -430,13 +413,16 @@ export default function AdminDashboard({ onNavigate }) {
         </div>
       </div>
 
-      {/* Recent Platform Activity */}
+      {/* Global Activity Stream Card */}
       <div className="card">
-        <h2 className="card-title">Recent Activity Stream (Global)</h2>
+        <h2 className="card-title">Recent System Activity</h2>
+        
         {recentActivity.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px', padding: '10px 0' }}>No activity records found yet.</p>
+          <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            No recent activity recorded yet.
+          </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
+          <div className="table-responsive">
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
@@ -484,7 +470,7 @@ export default function AdminDashboard({ onNavigate }) {
 
       {/* User Activity Inspection Modal */}
       {inspectingUser && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -497,7 +483,7 @@ export default function AdminDashboard({ onNavigate }) {
           zIndex: 9999,
           padding: '20px'
         }}>
-          <div style={{
+          <div className="modal-box" style={{
             backgroundColor: 'var(--card-background)',
             borderRadius: 'var(--border-radius)',
             border: '1px solid var(--border-color)',

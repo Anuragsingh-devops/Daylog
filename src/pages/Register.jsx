@@ -55,7 +55,7 @@ export default function Register({ onNavigate }) {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '40px auto', padding: '0 20px' }}>
+    <div style={{ maxWidth: '440px', margin: '30px auto', width: '100%', padding: '0 12px' }}>
       <div className="card">
         <h1 style={{ textAlign: 'center', marginBottom: '20px', fontSize: '28px', fontWeight: '800', color: 'var(--primary-color)' }}>
           ⏱️ DailyTrack

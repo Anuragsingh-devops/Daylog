@@ -236,82 +236,84 @@ export default function Todos() {
       )}
 
       {/* Interactive Month Selector Bar */}
-      <div className="card" style={{ padding: '12px 18px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', backgroundColor: '#f8fafc' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            onClick={handlePrevMonth}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '6px',
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'var(--card-background)',
-              fontSize: '13px',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-            title="Previous month"
-          >
-            ◀ Prev Month
-          </button>
+      <div className="card" style={{ padding: '12px 16px', marginBottom: '20px', backgroundColor: '#f8fafc' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={handlePrevMonth}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: 'var(--card-background)',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+              title="Previous month"
+            >
+              ◀ Prev
+            </button>
 
-          <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-color)', minWidth: '160px', textAlign: 'center' }}>
-            📅 {getFormattedMonthLabel(selectedMonth)}
-          </span>
+            <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-color)', textAlign: 'center' }}>
+              📅 {getFormattedMonthLabel(selectedMonth)}
+            </span>
 
-          <button
-            onClick={handleNextMonth}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '6px',
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'var(--card-background)',
-              fontSize: '13px',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-            title="Next month"
-          >
-            Next Month ▶
-          </button>
-        </div>
+            <button
+              onClick={handleNextMonth}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: 'var(--card-background)',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+              title="Next month"
+            >
+              Next ▶
+            </button>
+          </div>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button
-            onClick={handleCurrentMonth}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '6px',
-              border: '1px solid var(--primary-color)',
-              backgroundColor: selectedMonth === getCurrentYearMonth() ? 'var(--primary-color)' : 'transparent',
-              color: selectedMonth === getCurrentYearMonth() ? '#ffffff' : 'var(--primary-color)',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            Current Month
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={handleCurrentMonth}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: '1px solid var(--primary-color)',
+                backgroundColor: selectedMonth === getCurrentYearMonth() ? 'var(--primary-color)' : 'transparent',
+                color: selectedMonth === getCurrentYearMonth() ? '#ffffff' : 'var(--primary-color)',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              This Month
+            </button>
 
-          <button
-            onClick={handleToggleAllMonths}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '6px',
-              border: '1px solid var(--border-color)',
-              backgroundColor: selectedMonth === 'all' ? 'var(--primary-color)' : 'transparent',
-              color: selectedMonth === 'all' ? '#ffffff' : 'var(--text-muted)',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            {selectedMonth === 'all' ? 'Filtering: All Time' : 'View All Months'}
-          </button>
+            <button
+              onClick={handleToggleAllMonths}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: selectedMonth === 'all' ? 'var(--primary-color)' : 'transparent',
+                color: selectedMonth === 'all' ? '#ffffff' : 'var(--text-muted)',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              {selectedMonth === 'all' ? 'All Time' : 'All Months'}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Progress & Overview Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+      <div className="stats-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px', marginBottom: '24px' }}>
         <div className="card" style={{ padding: '16px' }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>
             {selectedMonth === 'all' ? 'TOTAL TASKS' : 'TASKS IN ' + getFormattedMonthLabel(selectedMonth).toUpperCase()}
@@ -330,7 +332,7 @@ export default function Todos() {
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>COMPLETED</div>
           <div style={{ fontSize: '26px', fontWeight: '700', marginTop: '4px', color: 'var(--success-color)' }}>{stats.completed}</div>
         </div>
-        <div className="card" style={{ padding: '16px' }}>
+        <div className="card" style={{ padding: '16px', gridColumn: 'span 1' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>COMPLETION</div>
             <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary-color)' }}>{completionRate}%</div>
@@ -357,7 +359,7 @@ export default function Todos() {
               placeholder="What needs to be done? (Press Enter to add)"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              style={{ flex: '1', minWidth: '220px' }}
+              style={{ flex: '1 1 200px' }}
               required
             />
 
@@ -366,7 +368,7 @@ export default function Todos() {
               className="form-control"
               value={newRecurrence}
               onChange={(e) => setNewRecurrence(e.target.value)}
-              style={{ width: 'auto', minWidth: '130px', fontWeight: newRecurrence !== 'none' ? '600' : 'normal' }}
+              style={{ flex: '1 1 120px', minWidth: '120px', fontWeight: newRecurrence !== 'none' ? '600' : 'normal' }}
               title="Repeat frequency"
             >
               <option value="none">One-time</option>
@@ -380,7 +382,7 @@ export default function Todos() {
               className="form-control"
               value={newPriority}
               onChange={(e) => setNewPriority(e.target.value)}
-              style={{ width: 'auto', minWidth: '110px' }}
+              style={{ flex: '1 1 100px', minWidth: '100px' }}
             >
               <option value="low">🟢 Low</option>
               <option value="medium">🟡 Medium</option>
@@ -393,7 +395,7 @@ export default function Todos() {
               className="form-control"
               value={newDueDate}
               onChange={(e) => setNewDueDate(e.target.value)}
-              style={{ width: 'auto' }}
+              style={{ flex: '1 1 130px' }}
               title="Due date (for monthly tasks, sets the monthly target day)"
             />
 
@@ -407,7 +409,8 @@ export default function Todos() {
                 padding: '8px 12px',
                 fontSize: '13px',
                 cursor: 'pointer',
-                color: showNotes ? 'var(--primary-color)' : 'var(--text-muted)'
+                color: showNotes ? 'var(--primary-color)' : 'var(--text-muted)',
+                minHeight: '40px'
               }}
             >
               {showNotes ? 'Hide Notes' : '+ Notes'}
@@ -417,7 +420,7 @@ export default function Todos() {
               type="submit"
               className="btn btn-primary"
               disabled={submitting || !newTitle.trim()}
-              style={{ minHeight: '38px', padding: '0 20px' }}
+              style={{ minHeight: '40px', padding: '0 20px', flex: '1 1 100px' }}
             >
               {submitting ? 'Adding...' : '+ Add Task'}
             </button>
@@ -441,7 +444,7 @@ export default function Todos() {
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
           {/* Filter Tabs */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="scroll-pills">
             {[
               { id: 'all', label: 'All Tasks', count: stats.total },
               { id: 'today', label: 'Today', count: stats.today_pending },
@@ -457,9 +460,10 @@ export default function Todos() {
                   padding: '5px 14px',
                   borderRadius: '16px',
                   border: '1px solid var(--border-color)',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer',
+                  whiteSpace: 'nowrap',
                   backgroundColor: filter === tab.id ? 'var(--primary-color)' : 'var(--card-background)',
                   color: filter === tab.id ? '#ffffff' : 'var(--text-color)',
                   transition: 'var(--transition)'
@@ -471,7 +475,7 @@ export default function Todos() {
           </div>
 
           {/* Search Input */}
-          <div style={{ minWidth: '200px' }}>
+          <div style={{ width: '100%', maxWidth: '240px' }}>
             <input
               type="text"
               className="form-control"
@@ -523,21 +527,22 @@ export default function Todos() {
                     onChange={() => handleToggle(todo)}
                     style={{
                       marginTop: '4px',
-                      width: '18px',
-                      height: '18px',
+                      width: '20px',
+                      height: '20px',
                       cursor: 'pointer',
                       accentColor: 'var(--primary-color)'
                     }}
                   />
 
                   {/* Task Content */}
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span style={{
                         fontSize: '15px',
                         fontWeight: '600',
                         color: 'var(--text-color)',
-                        textDecoration: isCompleted ? 'line-through' : 'none'
+                        textDecoration: isCompleted ? 'line-through' : 'none',
+                        wordBreak: 'break-word'
                       }}>
                         {todo.title}
                       </span>
@@ -594,6 +599,7 @@ export default function Todos() {
                         marginTop: '4px',
                         marginBottom: 0,
                         whiteSpace: 'pre-line',
+                        wordBreak: 'break-word',
                         textDecoration: isCompleted ? 'line-through' : 'none'
                       }}>
                         {todo.description}
@@ -613,7 +619,7 @@ export default function Todos() {
                         fontSize: '12px',
                         fontWeight: '500',
                         cursor: 'pointer',
-                        padding: '4px'
+                        padding: '6px'
                       }}
                     >
                       Edit
@@ -628,7 +634,7 @@ export default function Todos() {
                         fontSize: '12px',
                         fontWeight: '500',
                         cursor: 'pointer',
-                        padding: '4px'
+                        padding: '6px'
                       }}
                     >
                       Delete
@@ -643,7 +649,7 @@ export default function Todos() {
 
       {/* Edit Task Modal */}
       {editingTodo && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -656,7 +662,7 @@ export default function Todos() {
           zIndex: 9999,
           padding: '20px'
         }}>
-          <div style={{
+          <div className="modal-box" style={{
             backgroundColor: 'var(--card-background)',
             borderRadius: 'var(--border-radius)',
             border: '1px solid var(--border-color)',
@@ -676,7 +682,7 @@ export default function Todos() {
               <h2 style={{ fontSize: '16px', fontWeight: '700', margin: 0 }}>Edit Task</h2>
               <button
                 onClick={() => setEditingTodo(null)}
-                style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'var(--text-muted)' }}
+                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }}
               >
                 ✕
               </button>
@@ -746,7 +752,7 @@ export default function Todos() {
                   type="button"
                   className="btn btn-secondary"
                   onClick={() => setEditingTodo(null)}
-                  style={{ minHeight: '36px', fontSize: '13px' }}
+                  style={{ minHeight: '38px', fontSize: '13px' }}
                 >
                   Cancel
                 </button>
@@ -754,7 +760,7 @@ export default function Todos() {
                   type="submit"
                   className="btn btn-primary"
                   disabled={editSubmitting || !editTitle.trim()}
-                  style={{ minHeight: '36px', fontSize: '13px' }}
+                  style={{ minHeight: '38px', fontSize: '13px' }}
                 >
                   {editSubmitting ? 'Saving...' : 'Save Changes'}
                 </button>

@@ -97,9 +97,9 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
   };
 
   return (
-    <div style={{ maxWidth: '500px', margin: '40px auto', padding: '0 20px' }}>
+    <div style={{ maxWidth: '520px', margin: '20px auto', width: '100%' }}>
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
           <h2 style={{ fontSize: '20px', fontWeight: '700' }}>
             {isEditing ? 'Edit Daily Entry' : 'Add Daily Entry'}
           </h2>
@@ -107,14 +107,14 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
             type="button" 
             onClick={() => onNavigate('dashboard')} 
             className="btn btn-secondary"
-            style={{ minHeight: '34px', padding: '6px 12px', fontSize: '13px', backgroundColor: '#6b7280' }}
+            style={{ minHeight: '36px', padding: '6px 14px', fontSize: '13px' }}
           >
             Cancel
           </button>
         </div>
 
         {generalError && (
-          <div className="status-badge danger" style={{ width: '100%', marginBottom: '16px', display: 'flex', boxSizing: 'border-box' }}>
+          <div className="status-badge danger" style={{ width: '100%', marginBottom: '16px' }}>
             <span className="status-dot"></span>
             {generalError}
           </div>
@@ -122,23 +122,17 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
 
         <form onSubmit={handleSubmit}>
           {/* Date Picker */}
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="entry_date" style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
+          <div className="form-group">
+            <label htmlFor="entry_date" className="form-label">
               Date
             </label>
             <input
               type="date"
               id="entry_date"
+              className="form-control"
               required
               value={entryDate}
               onChange={(e) => setEntryDate(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--border-radius)',
-                fontSize: '15px'
-              }}
             />
             {errors.entry_date && (
               <span style={{ color: 'var(--danger-color)', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.entry_date}</span>
@@ -146,23 +140,17 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
           </div>
 
           {/* Time Picker */}
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="entry_time" style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
+          <div className="form-group">
+            <label htmlFor="entry_time" className="form-label">
               Time
             </label>
             <input
               type="time"
               id="entry_time"
+              className="form-control"
               required
               value={entryTime}
               onChange={(e) => setEntryTime(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--border-radius)',
-                fontSize: '15px'
-              }}
             />
             {errors.entry_time && (
               <span style={{ color: 'var(--danger-color)', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.entry_time}</span>
@@ -170,22 +158,15 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
           </div>
 
           {/* Type Dropdown */}
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="entry_type" style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
-              Type
+          <div className="form-group">
+            <label htmlFor="entry_type" className="form-label">
+              Activity Type
             </label>
             <select
               id="entry_type"
+              className="form-control"
               value={type}
               onChange={(e) => setType(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--border-radius)',
-                fontSize: '15px',
-                backgroundColor: 'white'
-              }}
             >
               {types.map(t => (
                 <option key={t} value={t}>{t}</option>
@@ -198,8 +179,8 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
 
           {/* Amount field (conditional render for Expenses) */}
           {type === 'Expense' && (
-            <div style={{ marginBottom: '16px' }}>
-              <label htmlFor="entry_amount" style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
+            <div className="form-group">
+              <label htmlFor="entry_amount" className="form-label">
                 Amount (₹)
               </label>
               <input
@@ -207,17 +188,11 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
                 step="0.01"
                 min="0.01"
                 id="entry_amount"
+                className="form-control"
                 required
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="₹ 0.00"
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--border-radius)',
-                  fontSize: '15px'
-                }}
               />
               {errors.amount && (
                 <span style={{ color: 'var(--danger-color)', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.amount}</span>
@@ -226,26 +201,18 @@ export default function AddEntry({ onNavigate, editingEntry = null }) {
           )}
 
           {/* Description Textarea */}
-          <div style={{ marginBottom: '24px' }}>
-            <label htmlFor="entry_content" style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
+          <div className="form-group" style={{ marginBottom: '22px' }}>
+            <label htmlFor="entry_content" className="form-label">
               What did you do?
             </label>
             <textarea
               id="entry_content"
+              className="form-control"
               required
               rows="4"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Describe your activity..."
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--border-radius)',
-                fontSize: '15px',
-                fontFamily: 'inherit',
-                lineHeight: '1.4'
-              }}
             ></textarea>
             {errors.content && (
               <span style={{ color: 'var(--danger-color)', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.content}</span>

@@ -141,12 +141,15 @@ export default function History({ onEditEntry }) {
   return (
     <div>
       {/* 1. Header and PDF trigger */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '700' }}>Reports</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: '700' }}>Reports & Analytics</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>Analyze your logs and export custom PDF summaries</p>
+        </div>
         <button 
           onClick={handleExportPDF} 
           className="btn btn-primary"
-          style={{ gap: '8px' }}
+          style={{ minHeight: '40px', padding: '0 18px' }}
           disabled={entries.length === 0}
         >
           📄 Export PDF Report
@@ -155,49 +158,32 @@ export default function History({ onEditEntry }) {
 
       {/* 2. Filter Controls Card */}
       <div className="card" style={{ marginBottom: '24px' }}>
-        <h2 className="card-title" style={{ fontSize: '15px', marginBottom: '16px', paddingBottom: '6px' }}>Filter & Search Logs</h2>
+        <h2 className="card-title" style={{ fontSize: '16px', marginBottom: '16px', paddingBottom: '6px' }}>Filter & Search Logs</h2>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px' }}>
           {/* Text Search */}
           <div>
-            <label htmlFor="search" style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>Search Description</label>
+            <label htmlFor="search" className="form-label" style={{ fontSize: '12px' }}>Search Description</label>
             <input 
               type="text" 
               id="search"
+              className="form-control"
               placeholder="Search words..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius)', fontSize: '14px' }}
+              style={{ fontSize: '14px' }}
             />
-          </div>
-
-          {/* Type Selector (Multi-select Checkboxes) */}
-          <div style={{ gridColumn: 'span 2' }}>
-            <span style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '8px' }}>Activity Types</span>
-            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center', minHeight: '38px' }}>
-              {types.map(t => (
-                <label key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', cursor: 'pointer', fontWeight: '500' }}>
-                  <input 
-                    type="checkbox" 
-                    value={t}
-                    checked={selectedTypes.includes(t)}
-                    onChange={() => handleTypeCheckboxChange(t)}
-                    style={{ cursor: 'pointer', width: '16px', height: '16px' }}
-                  />
-                  <span className={`entry-type ${t.toLowerCase()}`} style={{ cursor: 'pointer', margin: 0 }}>{t}</span>
-                </label>
-              ))}
-            </div>
           </div>
 
           {/* Range Selector */}
           <div>
-            <label htmlFor="range" style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>Date Range</label>
+            <label htmlFor="range" className="form-label" style={{ fontSize: '12px' }}>Date Range</label>
             <select 
               id="range"
+              className="form-control"
               value={range}
               onChange={(e) => setRange(e.target.value)}
-              style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius)', fontSize: '14px', backgroundColor: 'white' }}
+              style={{ fontSize: '14px', backgroundColor: 'var(--card-background)' }}
             >
               <option value="today">Today</option>
               <option value="yesterday">Yesterday</option>
@@ -208,56 +194,74 @@ export default function History({ onEditEntry }) {
           </div>
         </div>
 
+        {/* Activity Type Checkboxes */}
+        <div style={{ marginTop: '16px' }}>
+          <span className="form-label" style={{ fontSize: '12px', marginBottom: '8px' }}>Activity Types:</span>
+          <div className="scroll-pills" style={{ alignItems: 'center', minHeight: '36px' }}>
+            {types.map(t => (
+              <label key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer', fontWeight: '500', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: selectedTypes.includes(t) ? '#eff6ff' : 'transparent', whiteSpace: 'nowrap' }}>
+                <input 
+                  type="checkbox" 
+                  value={t}
+                  checked={selectedTypes.includes(t)}
+                  onChange={() => handleTypeCheckboxChange(t)}
+                  style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                />
+                <span className={`entry-type ${t.toLowerCase()}`} style={{ cursor: 'pointer', margin: 0 }}>{t}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
         {/* Custom Date Inputs (Conditional render) */}
         {range === 'custom' && (
           <div style={{ display: 'flex', gap: '15px', marginTop: '15px', flexWrap: 'wrap' }}>
-            <div>
-              <label htmlFor="from_date" style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>From Date</label>
+            <div style={{ flex: '1 1 140px' }}>
+              <label htmlFor="from_date" className="form-label" style={{ fontSize: '12px' }}>From Date</label>
               <input 
                 type="date" 
                 id="from_date"
+                className="form-control"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
-                style={{ padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius)', fontSize: '14px' }}
               />
             </div>
-            <div>
-              <label htmlFor="to_date" style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>To Date</label>
+            <div style={{ flex: '1 1 140px' }}>
+              <label htmlFor="to_date" className="form-label" style={{ fontSize: '12px' }}>To Date</label>
               <input 
                 type="date" 
                 id="to_date"
+                className="form-control"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
-                style={{ padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius)', fontSize: '14px' }}
               />
             </div>
           </div>
         )}
       </div>
 
-      {/* 3. Aggregated Summary Report Card */}
-      <div className="card" style={{ marginBottom: '24px', backgroundColor: '#fafafa' }}>
-        <h2 className="card-title" style={{ fontSize: '15px', marginBottom: '16px', paddingBottom: '6px' }}>Aggregate Report Summary</h2>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '15px', textAlign: 'center' }}>
-          <div style={{ padding: '12px', background: 'white', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Total Entries</div>
-            <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px' }}>{totalCount}</div>
+      {/* 3. Summary Statistics Card */}
+      <div className="card" style={{ marginBottom: '24px' }}>
+        <h2 className="card-title">Summary for Filtered Range</h2>
+        <div className="stats-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+          <div style={{ padding: '12px', backgroundColor: '#f8fafc', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>TOTAL LOGS</div>
+            <div style={{ fontSize: '22px', fontWeight: '700', marginTop: '4px' }}>{entries.length}</div>
           </div>
           
           {Object.entries(typeCounts)
-            .filter(([typeName, count]) => count > 0 && typeName.toLowerCase() !== 'expense')
+            .filter(([typeName]) => typeName.toLowerCase() !== 'expense')
             .map(([typeName, count]) => (
-              <div key={typeName} style={{ padding: '12px', background: 'white', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{typeName} Logs</div>
-                <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px' }}>{count}</div>
+              <div key={typeName} style={{ padding: '12px', backgroundColor: '#f8fafc', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>{typeName.toUpperCase()}</div>
+                <div style={{ fontSize: '22px', fontWeight: '700', marginTop: '4px' }}>{count}</div>
               </div>
             ))}
           
           {types.some(t => t.toLowerCase() === 'expense') && (
-            <div style={{ padding: '12px', background: 'white', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Total Spend</div>
-              <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px', color: totalExpenses > 0 ? 'var(--danger-color)' : 'inherit' }}>
+            <div style={{ padding: '12px', backgroundColor: '#f8fafc', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>TOTAL SPEND</div>
+              <div style={{ fontSize: '22px', fontWeight: '700', marginTop: '4px', color: totalExpenses > 0 ? 'var(--danger-color)' : 'inherit' }}>
                 ₹{totalExpenses.toFixed(2)}
               </div>
             </div>
