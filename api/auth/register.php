@@ -106,6 +106,13 @@ try {
     $insertStmt->execute([$name, $email, $passwordHash, $role]);
     $userId = $db->lastInsertId();
 
+    // Seed default activity types for the new user in database
+    $defaultTypes = ['Work', 'Study', 'Skill', 'Expense', 'Personal'];
+    $seedStmt = $db->prepare("INSERT INTO activity_types (user_id, name) VALUES (?, ?)");
+    foreach ($defaultTypes as $typeItem) {
+        $seedStmt->execute([$userId, $typeItem]);
+    }
+
     // Start session and login
     initSession();
     $_SESSION['user_id'] = $userId;

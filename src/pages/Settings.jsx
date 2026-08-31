@@ -9,7 +9,7 @@ export default function Settings() {
     localStorage.getItem('defaultActivityType') || 'Work'
   );
   
-  const [allTypes, setAllTypes] = useState(['Work', 'Study', 'Skill', 'Expense', 'Personal']);
+  const [allTypes, setAllTypes] = useState([]);
   const [customTypes, setCustomTypes] = useState([]);
   const [newTypeName, setNewTypeName] = useState('');
   

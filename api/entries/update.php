@@ -53,8 +53,17 @@ try {
     // Fetch custom types to validate against
     $typeStmt = $db->prepare("SELECT name FROM activity_types WHERE user_id = ?");
     $typeStmt->execute([$userId]);
-    $customTypes = $typeStmt->fetchAll(PDO::FETCH_COLUMN);
-    $allowedTypes = array_merge(['Study', 'Skill', 'Expense', 'Personal', 'Work'], $customTypes);
+    $allowedTypes = $typeStmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // Self-healing check
+    if (empty($allowedTypes)) {
+        $defaultTypes = ['Work', 'Study', 'Skill', 'Expense', 'Personal'];
+        $seedStmt = $db->prepare("INSERT INTO activity_types (user_id, name) VALUES (?, ?)");
+        foreach ($defaultTypes as $typeItem) {
+            $seedStmt->execute([$userId, $typeItem]);
+        }
+        $allowedTypes = $defaultTypes;
+    }
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()]);

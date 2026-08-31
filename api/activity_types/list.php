@@ -34,21 +34,25 @@ $userId = requireAuth();
 try {
     $db = getDatabaseConnection();
 
-    // Default built-in activity types
-    $types = ['Work', 'Study', 'Skill', 'Expense', 'Personal'];
-
-    // Query user custom activity types
+    // Query user activity types from database
     $stmt = $db->prepare("SELECT name FROM activity_types WHERE user_id = ? ORDER BY name ASC");
     $stmt->execute([$userId]);
-    $customTypes = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $dbTypes = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-    // Merge custom types
-    $allTypes = array_merge($types, $customTypes);
+    // Self-healing check: if they have zero types (e.g. legacy user), seed default types
+    if (empty($dbTypes)) {
+        $defaultTypes = ['Work', 'Study', 'Skill', 'Expense', 'Personal'];
+        $seedStmt = $db->prepare("INSERT INTO activity_types (user_id, name) VALUES (?, ?)");
+        foreach ($defaultTypes as $typeItem) {
+            $seedStmt->execute([$userId, $typeItem]);
+        }
+        $dbTypes = $defaultTypes;
+    }
 
     echo json_encode([
         'status' => 'success',
-        'types' => $allTypes,
-        'custom_types' => $customTypes // Return separately too for easy management in settings
+        'types' => $dbTypes,
+        'custom_types' => $dbTypes
     ]);
 } catch (Exception $e) {
     http_response_code(500);

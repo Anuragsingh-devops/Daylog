@@ -8,8 +8,8 @@ export default function History({ onEditEntry }) {
 
   // Filter States
   const [search, setSearch] = useState('');
-  const [types, setTypes] = useState(['Work', 'Study', 'Skill', 'Expense', 'Personal']);
-  const [selectedTypes, setSelectedTypes] = useState(['Work', 'Study', 'Skill', 'Expense', 'Personal']);
+  const [types, setTypes] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
   const [range, setRange] = useState('this_month'); // Default to last 30 days
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -111,13 +111,18 @@ export default function History({ onEditEntry }) {
 
   // Aggregated Report Metrics
   const totalCount = entries.length;
-  const workCount = entries.filter(e => e.type === 'Work').length;
-  const studyCount = entries.filter(e => e.type === 'Study').length;
-  const skillCount = entries.filter(e => e.type === 'Skill').length;
-  const personalCount = entries.filter(e => e.type === 'Personal').length;
-  const expenseCount = entries.filter(e => e.type === 'Expense').length;
+  
+  // Dynamic categories logs counter
+  const typeCounts = {};
+  types.forEach(t => {
+    typeCounts[t] = 0;
+  });
+  entries.forEach(e => {
+    typeCounts[e.type] = (typeCounts[e.type] || 0) + 1;
+  });
+
   const totalExpenses = entries
-    .filter(e => e.type === 'Expense')
+    .filter(e => e.type.toLowerCase() === 'expense')
     .reduce((sum, e) => sum + (e.amount || 0), 0);
 
   // Trigger PDF Export
@@ -239,24 +244,24 @@ export default function History({ onEditEntry }) {
             <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Total Entries</div>
             <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px' }}>{totalCount}</div>
           </div>
-          <div style={{ padding: '12px', background: 'white', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Work Entries</div>
-            <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px' }}>{workCount}</div>
-          </div>
-          <div style={{ padding: '12px', background: 'white', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Study Entries</div>
-            <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px' }}>{studyCount}</div>
-          </div>
-          <div style={{ padding: '12px', background: 'white', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Skills Learned</div>
-            <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px' }}>{skillCount}</div>
-          </div>
-          <div style={{ padding: '12px', background: 'white', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Total Spend</div>
-            <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px', color: totalExpenses > 0 ? 'var(--danger-color)' : 'inherit' }}>
-              ₹{totalExpenses.toFixed(2)}
+          
+          {Object.entries(typeCounts)
+            .filter(([typeName, count]) => count > 0 && typeName.toLowerCase() !== 'expense')
+            .map(([typeName, count]) => (
+              <div key={typeName} style={{ padding: '12px', background: 'white', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{typeName} Logs</div>
+                <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px' }}>{count}</div>
+              </div>
+            ))}
+          
+          {types.some(t => t.toLowerCase() === 'expense') && (
+            <div style={{ padding: '12px', background: 'white', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Total Spend</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px', color: totalExpenses > 0 ? 'var(--danger-color)' : 'inherit' }}>
+                ₹{totalExpenses.toFixed(2)}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
