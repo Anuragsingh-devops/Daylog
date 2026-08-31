@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import { getApiStatus } from './services/api'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
@@ -16,13 +15,6 @@ function AppContent() {
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'add-entry', 'history', 'login', 'register', 'admin'
   const [editingEntry, setEditingEntry] = useState(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  
-  const [apiStatus, setApiStatus] = useState({
-    loading: true,
-    connected: false,
-    data: null,
-    error: null
-  });
 
   // Helper to check if current URL points to secret admin portal
   const isSecretAdminRoute = () => window.location.hash === SECRET_ADMIN_HASH || window.location.hash.includes('portal-ctrl-928');
@@ -34,28 +26,6 @@ function AppContent() {
     document.addEventListener('click', closeDropdown);
     return () => document.removeEventListener('click', closeDropdown);
   }, [userDropdownOpen]);
-
-  useEffect(() => {
-    async function checkConnection() {
-      const result = await getApiStatus();
-      if (result.status === 'success' || result.status === 'warning') {
-        setApiStatus({
-          loading: false,
-          connected: true,
-          data: result,
-          error: null
-        });
-      } else {
-        setApiStatus({
-          loading: false,
-          connected: false,
-          data: null,
-          error: result.message || 'Failed to connect to PHP server'
-        });
-      }
-    }
-    checkConnection();
-  }, []);
 
   // Sync view based on URL hash and auth state
   useEffect(() => {
@@ -270,34 +240,6 @@ function AppContent() {
       </header>
 
       <main className="container">
-        {/* Connection Checker Card */}
-        <div className="card" style={{ marginBottom: '24px' }}>
-          <h2 className="card-title" style={{ fontSize: '15px', marginBottom: '10px', paddingBottom: '6px' }}>
-            System Integrity Check
-          </h2>
-          {apiStatus.loading ? (
-            <div className="status-badge warning">
-              <span className="status-dot"></span>
-              Checking connection to PHP API...
-            </div>
-          ) : apiStatus.connected ? (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-              <div className="status-badge success" style={{ padding: '4px 10px', fontSize: '12px' }}>
-                <span className="status-dot"></span>
-                Backend & DB Connected
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                PHP {apiStatus.data.php_version} | DB: {apiStatus.data.database?.message} | TZ: {apiStatus.data.timezone}
-              </div>
-            </div>
-          ) : (
-            <div className="status-badge danger">
-              <span className="status-dot"></span>
-              API Offline: {apiStatus.error}
-            </div>
-          )}
-        </div>
-
         {/* Dynamic View Content */}
         {currentView === 'dashboard' && (
           <Dashboard 
