@@ -56,15 +56,6 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
     }
   };
 
-  // Compute daily metrics dynamically
-  const totalSpend = entries
-    .filter(e => e.type === 'Expense')
-    .reduce((sum, e) => sum + (e.amount || 0), 0);
-
-  const workCount = entries.filter(e => e.type === 'Work').length;
-  const studyCount = entries.filter(e => e.type === 'Study').length;
-  const skillCount = entries.filter(e => e.type === 'Skill').length;
-
   const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
   const formattedDate = new Date().toLocaleDateString('en-US', dateOptions);
 
@@ -164,24 +155,6 @@ export default function Dashboard({ onNavigate, onEditEntry }) {
             <div className="stat-row">
               <span>Today's Entries</span>
               <span className="stat-val">{entries.length}</span>
-            </div>
-            <div className="stat-row">
-              <span>Study Entries</span>
-              <span className="stat-val">{studyCount}</span>
-            </div>
-            <div className="stat-row">
-              <span>Today's Spending</span>
-              <span className="stat-val" style={{ color: totalSpend > 0 ? 'var(--danger-color)' : 'inherit' }}>
-                ₹{totalSpend.toFixed(2)}
-              </span>
-            </div>
-            <div className="stat-row">
-              <span>Work Entries</span>
-              <span className="stat-val">{workCount}</span>
-            </div>
-            <div className="stat-row">
-              <span>Skills Learned</span>
-              <span className="stat-val">{skillCount}</span>
             </div>
           </div>
         </div>
