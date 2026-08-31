@@ -88,3 +88,93 @@ export async function getMeApi() {
   }
   return data.user;
 }
+
+/* ==========================================
+   ENTRY CRUD APIS
+   ========================================== */
+
+/**
+ * Create a new log entry.
+ * @param {Object} entryData {type, entry_date, entry_time, content, amount}
+ */
+export async function createEntryApi(entryData) {
+  const response = await fetch('/api/entries/create.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(entryData)
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const err = new Error(data.message || 'Failed to create entry.');
+    err.errors = data.errors || {};
+    throw err;
+  }
+  return data;
+}
+
+/**
+ * Fetch entries filtered by date or range.
+ * @param {Object} filters {date, range, type}
+ */
+export async function listEntriesApi(filters = {}) {
+  const queryParams = new URLSearchParams();
+  if (filters.date) queryParams.append('date', filters.date);
+  if (filters.range) queryParams.append('range', filters.range);
+  if (filters.type) queryParams.append('type', filters.type);
+
+  const response = await fetch(`/api/entries/list.php?${queryParams.toString()}`);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch entries.');
+  }
+  return data.entries;
+}
+
+/**
+ * Fetch a single entry details.
+ * @param {number} id 
+ */
+export async function getEntryApi(id) {
+  const response = await fetch(`/api/entries/get.php?id=${id}`);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch entry details.');
+  }
+  return data.entry;
+}
+
+/**
+ * Update an existing log entry.
+ * @param {Object} entryData {id, type, entry_date, entry_time, content, amount}
+ */
+export async function updateEntryApi(entryData) {
+  const response = await fetch('/api/entries/update.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(entryData)
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const err = new Error(data.message || 'Failed to update entry.');
+    err.errors = data.errors || {};
+    throw err;
+  }
+  return data;
+}
+
+/**
+ * Delete a log entry.
+ * @param {number} id 
+ */
+export async function deleteEntryApi(id) {
+  const response = await fetch('/api/entries/delete.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to delete entry.');
+  }
+  return data;
+}
