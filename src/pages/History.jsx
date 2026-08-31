@@ -8,10 +8,18 @@ export default function History({ onEditEntry }) {
 
   // Filter States
   const [search, setSearch] = useState('');
-  const [type, setType] = useState('All');
+  const [selectedTypes, setSelectedTypes] = useState(['Work', 'Study', 'Skill', 'Expense', 'Personal']);
   const [range, setRange] = useState('this_month'); // Default to last 30 days
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+
+  const handleTypeCheckboxChange = (t) => {
+    if (selectedTypes.includes(t)) {
+      setSelectedTypes(selectedTypes.filter(item => item !== t));
+    } else {
+      setSelectedTypes([...selectedTypes, t]);
+    }
+  };
 
   // Helper to initialize custom date range bounds (default to last 30 days if blank)
   useEffect(() => {
@@ -28,7 +36,10 @@ export default function History({ onEditEntry }) {
     setLoading(true);
     setErrorMessage('');
     try {
-      const params = { range, type, search };
+      // If all are selected, we don't need to specify types (returns all). If none are checked, send empty string.
+      // Otherwise send joined comma-separated string.
+      const typeParam = selectedTypes.length === 5 ? 'All' : selectedTypes.join(',');
+      const params = { range, type: typeParam, search };
       if (range === 'custom') {
         params.from_date = fromDate;
         params.to_date = toDate;
@@ -52,7 +63,7 @@ export default function History({ onEditEntry }) {
     }, 300);
 
     return () => clearTimeout(delayDebounce);
-  }, [search, type, range, fromDate, toDate]);
+  }, [search, selectedTypes, range, fromDate, toDate]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this log entry?')) {
@@ -96,9 +107,10 @@ export default function History({ onEditEntry }) {
 
   // Trigger PDF Export
   const handleExportPDF = () => {
+    const typeParam = selectedTypes.length === 5 ? 'All' : selectedTypes.join(',');
     const queryParams = new URLSearchParams({
       range,
-      type,
+      type: typeParam,
       search,
       from_date: fromDate,
       to_date: toDate
@@ -139,22 +151,23 @@ export default function History({ onEditEntry }) {
             />
           </div>
 
-          {/* Type Selector */}
-          <div>
-            <label htmlFor="type" style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>Activity Type</label>
-            <select 
-              id="type"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius)', fontSize: '14px', backgroundColor: 'white' }}
-            >
-              <option value="All">All Types</option>
-              <option value="Work">Work</option>
-              <option value="Study">Study</option>
-              <option value="Skill">Skill</option>
-              <option value="Expense">Expense</option>
-              <option value="Personal">Personal</option>
-            </select>
+          {/* Type Selector (Multi-select Checkboxes) */}
+          <div style={{ gridColumn: 'span 2' }}>
+            <span style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '8px' }}>Activity Types</span>
+            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center', minHeight: '38px' }}>
+              {['Work', 'Study', 'Skill', 'Expense', 'Personal'].map(t => (
+                <label key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', cursor: 'pointer', fontWeight: '500' }}>
+                  <input 
+                    type="checkbox" 
+                    value={t}
+                    checked={selectedTypes.includes(t)}
+                    onChange={() => handleTypeCheckboxChange(t)}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                  />
+                  <span className={`entry-type ${t.toLowerCase()}`} style={{ cursor: 'pointer', margin: 0 }}>{t}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* Range Selector */}

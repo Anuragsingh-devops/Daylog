@@ -42,10 +42,21 @@ try {
     $query = "SELECT id, user_id, type, entry_date, entry_time, content, amount, created_at FROM entries WHERE user_id = :user_id";
     $params = [':user_id' => $userId];
 
-    // Filter by type if provided and valid
+    // Filter by type if provided and valid (supports comma-separated values)
     if (!empty($typeFilter) && $typeFilter !== 'All') {
-        $query .= " AND type = :type";
-        $params[':type'] = $typeFilter;
+        $types = explode(',', $typeFilter);
+        $types = array_map('trim', $types);
+        $types = array_filter($types);
+        
+        if (!empty($types)) {
+            $inClauses = [];
+            foreach ($types as $index => $t) {
+                $paramName = ":type_" . $index;
+                $inClauses[] = $paramName;
+                $params[$paramName] = $t;
+            }
+            $query .= " AND type IN (" . implode(', ', $inClauses) . ")";
+        }
     }
 
     // Filter by date or range

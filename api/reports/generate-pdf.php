@@ -39,8 +39,19 @@ try {
     $params = [':user_id' => $userId];
 
     if (!empty($type) && $type !== 'All') {
-        $query .= " AND type = :type";
-        $params[':type'] = $type;
+        $types = explode(',', $type);
+        $types = array_map('trim', $types);
+        $types = array_filter($types);
+        
+        if (!empty($types)) {
+            $inClauses = [];
+            foreach ($types as $index => $t) {
+                $paramName = ":type_" . $index;
+                $inClauses[] = $paramName;
+                $params[$paramName] = $t;
+            }
+            $query .= " AND type IN (" . implode(', ', $inClauses) . ")";
+        }
     }
 
     if (!empty($search)) {
