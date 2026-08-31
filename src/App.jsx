@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import { getApiStatus } from './services/api'
+import Login from './pages/Login'
+import Register from './pages/Register'
 
-function App() {
+function AppContent() {
+  const { user, loading: authLoading, logout } = useAuth();
+  const [currentView, setCurrentView] = useState('login'); // 'login' or 'register'
   const [apiStatus, setApiStatus] = useState({
     loading: true,
     connected: false,
@@ -31,6 +36,25 @@ function App() {
     checkConnection();
   }, []);
 
+  if (authLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: 'var(--background-color)' }}>
+        <div className="status-badge warning" style={{ padding: '12px 24px', fontSize: '16px' }}>
+          <span className="status-dot"></span>
+          Verifying session status...
+        </div>
+      </div>
+    );
+  }
+
+  // If user is not logged in, show Login or Register pages
+  if (!user) {
+    if (currentView === 'register') {
+      return <Register onNavigate={setCurrentView} />;
+    }
+    return <Login onNavigate={setCurrentView} />;
+  }
+
   // Format today's date
   const today = new Date();
   const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
@@ -43,61 +67,57 @@ function App() {
           <a href="#" className="logo">
             <span>⏱️</span> DailyTrack
           </a>
-          <nav>
+          <nav style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <ul className="nav-links">
               <li><a href="#" className="active">Dashboard</a></li>
               <li><a href="#">History</a></li>
               <li><a href="#">Reports</a></li>
               <li><a href="#">Profile</a></li>
-              <li><a href="#">Login</a></li>
+              {user.role === 'admin' && (
+                <li><a href="#" style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '20px', marginLeft: '10px', color: 'var(--danger-color)' }}>Admin Dash</a></li>
+              )}
             </ul>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: '15px', borderLeft: '1px solid var(--border-color)', paddingLeft: '15px' }}>
+              <span style={{ fontSize: '14px', fontWeight: '600' }}>
+                👤 {user.name} ({user.role})
+              </span>
+              <button 
+                onClick={logout} 
+                className="btn btn-secondary" 
+                style={{ minHeight: '34px', padding: '6px 12px', fontSize: '13px', backgroundColor: '#374151' }}
+              >
+                Logout
+              </button>
+            </div>
           </nav>
         </div>
       </header>
 
       <main className="container">
-        {/* Phase 1 Backend Connection Checker */}
-        <div className="card">
-          <h2 className="card-title">Phase 1: Backend Connection Test</h2>
+        {/* Connection Checker Card */}
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <h2 className="card-title" style={{ fontSize: '15px', marginBottom: '10px', paddingBottom: '6px' }}>
+            System Integrity Check
+          </h2>
           {apiStatus.loading ? (
             <div className="status-badge warning">
               <span className="status-dot"></span>
               Checking connection to PHP API...
             </div>
           ) : apiStatus.connected ? (
-            <div>
-              <div className="status-badge success" style={{ marginBottom: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <div className="status-badge success" style={{ padding: '4px 10px', fontSize: '12px' }}>
                 <span className="status-dot"></span>
-                Backend API Connected
+                Backend & DB Connected
               </div>
-              <div style={{ marginTop: '10px', fontSize: '14px', color: 'var(--text-muted)' }}>
-                <p><strong>PHP Version:</strong> {apiStatus.data.php_version}</p>
-                <p><strong>Server Time:</strong> {apiStatus.data.local_time}</p>
-                <p><strong>Server Timezone:</strong> {apiStatus.data.timezone}</p>
-                <p><strong>Environment:</strong> {apiStatus.data.environment}</p>
-                <p>
-                  <strong>Database Connection Status: </strong>
-                  <span style={{ color: apiStatus.data.database?.connected ? 'var(--success-color)' : 'var(--danger-color)', fontWeight: 'bold' }}>
-                    {apiStatus.data.database?.message || 'Error'}
-                  </span>
-                </p>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                PHP {apiStatus.data.php_version} | DB: {apiStatus.data.database?.message} | TZ: {apiStatus.data.timezone}
               </div>
             </div>
           ) : (
-            <div>
-              <div className="status-badge danger" style={{ marginBottom: '15px' }}>
-                <span className="status-dot"></span>
-                Connection Failed
-              </div>
-              <p style={{ color: 'var(--danger-color)', fontSize: '14px' }}>
-                Error details: {apiStatus.error}
-              </p>
-              <div style={{ marginTop: '15px', padding: '12px', background: '#fffbeb', borderRadius: 'var(--border-radius)', fontSize: '13px', border: '1px solid #fde68a' }}>
-                <strong>Tip for local dev:</strong> Make sure you have started your local PHP development server in the project directory using:
-                <code style={{ display: 'block', background: '#f3f4f6', padding: '8px', marginTop: '6px', borderRadius: '4px', fontFamily: 'monospace' }}>
-                  php -S localhost:8000
-                </code>
-              </div>
+            <div className="status-badge danger">
+              <span className="status-dot"></span>
+              API Offline: {apiStatus.error}
             </div>
           )}
         </div>
@@ -214,4 +234,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
