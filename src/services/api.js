@@ -244,5 +244,24 @@ export async function deleteActivityTypeApi(name) {
   return data;
 }
 
+/**
+ * Rename a custom activity type.
+ * @param {string} oldName 
+ * @param {string} newName 
+ */
+export async function updateActivityTypeApi(oldName, newName) {
+  const response = await fetch('/api/activity_types/update.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ old_name: oldName, new_name: newName })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to rename activity type.');
+  }
+  return data;
+}
+
+
 
 

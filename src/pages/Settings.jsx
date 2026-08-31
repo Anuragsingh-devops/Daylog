@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { listActivityTypesApi, createActivityTypeApi, deleteActivityTypeApi } from '../services/api';
+import { listActivityTypesApi, createActivityTypeApi, deleteActivityTypeApi, updateActivityTypeApi } from '../services/api';
 
 export default function Settings() {
   const [darkMode, setDarkMode] = useState(
@@ -12,6 +12,9 @@ export default function Settings() {
   const [allTypes, setAllTypes] = useState([]);
   const [customTypes, setCustomTypes] = useState([]);
   const [newTypeName, setNewTypeName] = useState('');
+  
+  const [editingTypeName, setEditingTypeName] = useState(null);
+  const [editingValue, setEditingValue] = useState('');
   
   const [successMessage, setSuccessMessage] = useState('');
   const [typeSuccess, setTypeSuccess] = useState('');
@@ -98,6 +101,37 @@ export default function Settings() {
       setTimeout(() => setTypeSuccess(''), 3000);
     } catch (err) {
       setTypeError(err.message || 'Failed to delete activity type.');
+    }
+  };
+
+  // Rename a Custom Activity Type
+  const handleRenameType = async (e, oldName) => {
+    e.preventDefault();
+    setTypeError('');
+    setTypeSuccess('');
+
+    const trimmed = editingValue.trim();
+    if (!trimmed) {
+      setTypeError('Activity type name cannot be blank.');
+      return;
+    }
+
+    try {
+      const result = await updateActivityTypeApi(oldName, trimmed);
+      setTypeSuccess(result.message || 'Activity type renamed successfully.');
+      setEditingTypeName(null);
+      setEditingValue('');
+
+      // If renamed type was set as default preference, update localStorage preference
+      if (defaultType === oldName) {
+        setDefaultType(trimmed);
+        localStorage.setItem('defaultActivityType', trimmed);
+      }
+
+      fetchTypes(); // Reload types list
+      setTimeout(() => setTypeSuccess(''), 3000);
+    } catch (err) {
+      setTypeError(err.message || 'Failed to rename activity type.');
     }
   };
 
@@ -226,42 +260,107 @@ export default function Settings() {
             ) : (
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {customTypes.map(t => (
-                  <span 
-                    key={t} 
-                    className="entry-type" 
-                    style={{ 
-                      margin: 0, 
-                      padding: '4px 8px 4px 10px', 
-                      fontSize: '12px', 
-                      border: '1px solid var(--border-color)', 
-                      backgroundColor: 'var(--background-color)', 
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    {t}
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteType(t)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--danger-color)',
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        padding: '0 2px',
-                        lineHeight: 1,
-                        fontWeight: 'bold',
+                  editingTypeName === t ? (
+                    <form 
+                      key={t}
+                      onSubmit={(e) => handleRenameType(e, t)} 
+                      style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '4px', 
+                        margin: 0,
+                        padding: '4px 8px',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: 'var(--border-radius)',
+                        backgroundColor: 'var(--background-color)'
+                      }}
+                    >
+                      <input 
+                        type="text" 
+                        value={editingValue} 
+                        onChange={(e) => setEditingValue(e.target.value)} 
+                        autoFocus
+                        style={{ 
+                          padding: '2px 6px', 
+                          fontSize: '12px', 
+                          width: '100px', 
+                          borderRadius: '4px', 
+                          border: '1px solid var(--border-color)',
+                          outline: 'none'
+                        }}
+                      />
+                      <button 
+                        type="submit" 
+                        style={{ background: 'none', border: 'none', color: 'var(--success-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', padding: '0 2px' }}
+                        title="Save"
+                      >
+                        ✓
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => { setEditingTypeName(null); setEditingValue(''); }} 
+                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', padding: '0 2px' }}
+                        title="Cancel"
+                      >
+                        ✗
+                      </button>
+                    </form>
+                  ) : (
+                    <span 
+                      key={t} 
+                      className="entry-type" 
+                      style={{ 
+                        margin: 0, 
+                        padding: '4px 8px 4px 10px', 
+                        fontSize: '12px', 
+                        border: '1px solid var(--border-color)', 
+                        backgroundColor: 'var(--background-color)', 
                         display: 'inline-flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        gap: '8px'
                       }}
-                      title={`Delete ${t}`}
                     >
-                      ×
-                    </button>
-                  </span>
+                      {t}
+                      <button
+                        type="button"
+                        onClick={() => { setEditingTypeName(t); setEditingValue(t); }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--text-muted)',
+                          fontSize: '11px',
+                          cursor: 'pointer',
+                          padding: '0 2px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        title={`Rename ${t}`}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteType(t)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--danger-color)',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          padding: '0 2px',
+                          lineHeight: 1,
+                          fontWeight: 'bold',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        title={`Delete ${t}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )
                 ))}
               </div>
             )}
